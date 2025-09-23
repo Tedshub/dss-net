@@ -78,7 +78,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <div className="space-y-8">
                                 <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
                                     RKS adalah cara terbaik untuk membuat
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-white"> keputusan cerdas</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-white"> keputusan cerdas </span>
                                     untuk bisnis Anda!
                                 </h1>
 

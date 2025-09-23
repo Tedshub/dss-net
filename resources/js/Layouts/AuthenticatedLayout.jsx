@@ -20,7 +20,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (sidebarExpanded && !event.target.closest('.sidebar') && !event.target.closest('.sidebar-toggle')) {
+            // Jika sidebar terbuka dan klik di luar sidebar, tutup sidebar
+            if (sidebarExpanded && !event.target.closest('.sidebar')) {
                 setSidebarExpanded(false);
             }
         };
@@ -29,7 +30,37 @@ export default function AuthenticatedLayout({ header, children }) {
         return () => document.removeEventListener('click', handleClickOutside);
     }, [sidebarExpanded]);
 
-    const navigationItems = [
+    // Handler untuk klik item navigasi
+    const handleNavigationClick = (e, item) => {
+        // Jika sidebar belum terbuka, buka dulu dan prevent navigasi
+        if (!sidebarExpanded) {
+            e.preventDefault();
+            setSidebarExpanded(true);
+            return;
+        }
+
+        // Jika tidak ada route (placeholder), prevent navigasi
+        if (!item.route) {
+            e.preventDefault();
+            return;
+        }
+
+        // Jika ada route dan sidebar sudah terbuka, lanjutkan navigasi
+        // Link component akan handle navigasi secara otomatis
+    };
+
+    // Handler untuk klik area sidebar (bukan item navigasi)
+    const handleSidebarClick = (e) => {
+        // Jika klik pada area sidebar tapi bukan pada item navigasi
+        if (e.target.closest('.sidebar') && !e.target.closest('.nav-item')) {
+            if (!sidebarExpanded) {
+                setSidebarExpanded(true);
+            }
+        }
+    };
+
+    // Daftar semua navigation items
+    const allNavigationItems = [
         {
             name: 'Dashboard',
             icon: (
@@ -38,7 +69,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 </svg>
             ),
             route: 'dashboard',
-            active: route().current('dashboard')
+            active: route().current('dashboard'),
+            allowedRoles: ['admin', 'guest'] // Semua role bisa akses
         },
         {
             name: 'Kriteria',
@@ -48,7 +80,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 </svg>
             ),
             route: null, // Akan menggunakan # sebagai placeholder
-            active: false
+            active: false,
+            allowedRoles: ['admin'] // Hanya admin yang bisa akses
         },
         {
             name: 'Opsi Kebijakan',
@@ -58,7 +91,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 </svg>
             ),
             route: null, // Akan menggunakan # sebagai placeholder
-            active: false
+            active: false,
+            allowedRoles: ['admin', 'guest'] // Semua role bisa akses
         },
         {
             name: 'Matrix Penilaian',
@@ -68,7 +102,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 </svg>
             ),
             route: null, // Akan menggunakan # sebagai placeholder
-            active: false
+            active: false,
+            allowedRoles: ['admin', 'guest'] // Semua role bisa akses
         },
         {
             name: 'Hitung',
@@ -78,9 +113,15 @@ export default function AuthenticatedLayout({ header, children }) {
                 </svg>
             ),
             route: null, // Akan menggunakan # sebagai placeholder
-            active: false
+            active: false,
+            allowedRoles: ['admin', 'guest'] // Semua role bisa akses
         }
     ];
+
+    // Filter navigation items berdasarkan role user
+    const navigationItems = allNavigationItems.filter(item =>
+        item.allowedRoles.includes(user.role)
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -89,6 +130,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 className={`sidebar fixed inset-y-0 left-0 z-50 bg-white shadow-xl transition-all duration-300 ease-in-out ${
                     sidebarExpanded ? 'w-64' : 'w-16'
                 }`}
+                onClick={handleSidebarClick}
             >
                 {/* Logo */}
                 <div className="flex items-center h-16 px-4 border-b border-gray-200">
@@ -109,19 +151,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             <Link
                                 key={index}
                                 href={item.route ? route(item.route) : '#'}
-                                className={`sidebar-toggle flex items-center px-3 py-3 rounded-xl transition-all duration-200 group ${
+                                className={`nav-item flex items-center px-3 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
                                     item.active
                                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
                                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                 }`}
-                                onClick={(e) => {
-                                    if (!item.route) {
-                                        e.preventDefault();
-                                    }
-                                    if (!sidebarExpanded) {
-                                        setSidebarExpanded(true);
-                                    }
-                                }}
+                                onClick={(e) => handleNavigationClick(e, item)}
                             >
                                 <div className={`flex-shrink-0 transition-colors ${
                                     item.active ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'
@@ -133,10 +168,36 @@ export default function AuthenticatedLayout({ header, children }) {
                                 }`}>
                                     {item.name}
                                 </span>
+
+                                {/* Tooltip untuk saat sidebar tertutup */}
+                                {!sidebarExpanded && (
+                                    <div className="absolute left-16 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                                        {item.name}
+                                        <div className="absolute top-1/2 -left-1 transform -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                                    </div>
+                                )}
                             </Link>
                         ))}
                     </div>
                 </nav>
+
+                {/* Status indicator untuk behavior */}
+                {!sidebarExpanded && (
+                    <div className="absolute bottom-4 left-4">
+                        <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded opacity-75">
+                            Click to expand
+                        </div>
+                    </div>
+                )}
+
+                {/* Role indicator (optional) */}
+                {sidebarExpanded && (
+                    <div className="absolute bottom-4 left-4 right-4">
+                        <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded text-center border">
+                            Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Main Content */}
@@ -165,7 +226,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     {user.name.charAt(0).toUpperCase()}
                                                 </span>
                                             </div>
-                                            <span className="hidden md:inline text-sm font-medium">{user.name}</span>
+                                            <div className="hidden md:block text-left">
+                                                <div className="text-sm font-medium">{user.name}</div>
+                                                <div className="text-xs text-gray-500">{user.role}</div>
+                                            </div>
                                             <svg className="w-4 h-4 hidden md:inline" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
                                             </svg>
@@ -176,6 +240,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <div className="px-4 py-3 border-b border-gray-100">
                                             <div className="text-sm font-medium text-gray-900">{user.name}</div>
                                             <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                                            <div className="text-xs text-gray-400 mt-1">
+                                                Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                            </div>
                                         </div>
                                         <Dropdown.Link href={route('profile.edit')}>
                                             <div className="flex items-center space-x-2">
@@ -210,8 +277,6 @@ export default function AuthenticatedLayout({ header, children }) {
                     {children}
                 </main>
             </div>
-
-            {/* Mobile Sidebar Overlay - Removed since we keep desktop behavior */}
         </div>
     );
 }
