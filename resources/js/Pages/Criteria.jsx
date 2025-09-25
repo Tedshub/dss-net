@@ -1,3 +1,4 @@
+// resources/js/Pages/Criteria.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';

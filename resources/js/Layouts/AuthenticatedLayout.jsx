@@ -79,9 +79,9 @@ export default function AuthenticatedLayout({ header, children }) {
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             ),
-            route: null, // Akan menggunakan # sebagai placeholder
-            active: false,
-            allowedRoles: ['admin'] // Hanya admin yang bisa akses
+            route: 'criterias.index',
+            active: route().current('criterias.*'),
+            allowedRoles: ['admin']
         },
         {
             name: 'Opsi Kebijakan',
@@ -90,8 +90,8 @@ export default function AuthenticatedLayout({ header, children }) {
                     <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                 </svg>
             ),
-            route: null, // Akan menggunakan # sebagai placeholder
-            active: false,
+            route: 'alternatives.index', // Akan menggunakan # sebagai placeholder
+            active: route().current('alternatives.*'),
             allowedRoles: ['admin', 'guest'] // Semua role bisa akses
         },
         {
@@ -135,7 +135,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Logo */}
                 <div className="flex items-center h-16 px-4 border-b border-gray-200">
                     <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-sm">DSS</span>
+                        <span className="text-white font-bold text-sm">RKS</span>
                     </div>
                     <span className={`ml-3 text-gray-800 font-bold text-lg transition-all duration-300 ${
                         sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0'
@@ -205,13 +205,32 @@ export default function AuthenticatedLayout({ header, children }) {
                 sidebarExpanded ? 'ml-64' : 'ml-16'
             }`}>
 
-                {/* Top Navigation */}
-                <nav className="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4">
+                {/* Top Navigation - DIBUAT STICKY */}
+                <nav className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            {/* Page Title */}
+                            {/* Dynamic Greeting */}
                             <div>
-                                <h1 className="text-lg lg:text-xl font-semibold text-gray-900">Dashboard</h1>
+                                {(() => {
+                                    const hour = new Date().getHours();
+                                    let greeting = "Halo";
+
+                                    if (hour >= 5 && hour < 12) {
+                                        greeting = "Selamat Pagi";
+                                    } else if (hour >= 12 && hour < 15) {
+                                        greeting = "Selamat Siang";
+                                    } else if (hour >= 15 && hour < 18) {
+                                        greeting = "Selamat Sore";
+                                    } else {
+                                        greeting = "Selamat Malam";
+                                    }
+
+                                    return (
+                                        <h1 className="text-lg lg:text-xl font-semibold text-gray-900">
+                                            {greeting}, {user.name}
+                                        </h1>
+                                    );
+                                })()}
                             </div>
                         </div>
 

@@ -1,7 +1,14 @@
+// resources/js/Pages/Dashboard.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 
-export default function Dashboard() {
+export default function Dashboard({ criterias = [] }) {
+    // Menghitung statistik berdasarkan data real dari database
+    const totalCriteria = criterias.length;
+    const costCriteria = criterias.filter(c => c.type === 'cost').length;
+    const benefitCriteria = criterias.filter(c => c.type === 'benefit').length;
+    const averageWeight = totalCriteria > 0 ? (criterias.reduce((sum, c) => sum + parseFloat(c.weight), 0) / totalCriteria).toFixed(1) : 0;
+
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard - DSS RKS" />
@@ -18,12 +25,12 @@ export default function Dashboard() {
 
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-                    {/* Jumlah Criteria Card */}
+                    {/* Jumlah Criteria Card - Sekarang mengambil data dari database */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <p className="text-gray-600 text-sm font-medium mb-2">Jumlah Criteria</p>
-                                <p className="text-2xl lg:text-3xl font-bold text-gray-900">10</p>
+                                <p className="text-2xl lg:text-3xl font-bold text-gray-900">{totalCriteria}</p>
                             </div>
                             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
                                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
