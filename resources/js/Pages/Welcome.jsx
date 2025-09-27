@@ -1,16 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
-    const handleImageError = () => {
-        document
-            .getElementById('screenshot-container')
-            ?.classList.add('!hidden');
-        document.getElementById('docs-card')?.classList.add('!row-span-1');
-        document
-            .getElementById('docs-card-content')
-            ?.classList.add('!flex-row');
-        document.getElementById('background')?.classList.add('!hidden');
-    };
+export default function Welcome({ auth }) {
 
     return (
         <>
@@ -271,7 +261,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     {/* Footer */}
                     <footer className="container mx-auto px-6 py-8 text-center">
                         <div className="text-purple-200 text-sm">
-                            Sistem Pendukung Keputusan RKS v{laravelVersion} (PHP v{phpVersion}) - Membuat Keputusan Cerdas Menjadi Mudah
+                            Sistem Pendukung Keputusan RKS - Membuat Keputusan Cerdas Menjadi Mudah
                         </div>
                     </footer>
                 </div>

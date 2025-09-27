@@ -19,4 +19,9 @@ class Alternative extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function values()
+    {
+        return $this->hasMany(Value::class);
+    }
 }

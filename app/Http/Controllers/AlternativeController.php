@@ -1,5 +1,6 @@
 <?php
 // app/Http/Controllers/AlternativeController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\Alternative;
@@ -11,31 +12,28 @@ class AlternativeController extends Controller
 {
     public function __construct()
     {
-        // Pastikan semua route di controller ini butuh auth
+        // Semua route di controller ini wajib login
         $this->middleware('auth');
     }
 
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar alternatif milik user login
      */
     public function index()
     {
         $userId = Auth::id();
 
-        // tambahan guard (seharusnya sudah ditangani middleware)
-        if (!$userId) {
-            return redirect()->route('login');
-        }
-
-        $alternatives = Alternative::where('user_id', $userId)->get();
+        $alternatives = Alternative::where('user_id', $userId)
+            ->with('values.criteria') // eager load untuk nanti tampilkan matriks nilai
+            ->get();
 
         return Inertia::render('Alternatives/Index', [
-            'alternatives' => $alternatives
+            'alternatives' => $alternatives,
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form tambah alternatif baru
      */
     public function create()
     {
@@ -43,16 +41,17 @@ class AlternativeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan alternatif baru ke database
      */
     public function store(Request $request)
     {
         $userId = Auth::id();
+
         if (!$userId) {
             abort(403, 'Unauthorized');
         }
 
-        // validasi unique per user (boleh ada code yang sama di user lain)
+        // Validasi, unique per user
         $request->validate([
             'code' => 'required|string|max:10|unique:alternatives,code,NULL,id,user_id,' . $userId,
             'name' => 'required|string|max:255',
@@ -64,41 +63,44 @@ class AlternativeController extends Controller
             'user_id' => $userId,
         ]);
 
-        return redirect()->route('alternatives.index')->with('success', 'Alternative created successfully!');
+        return redirect()->route('alternatives.index')
+            ->with('success', 'Alternative created successfully!');
     }
 
     /**
-     * Display the specified resource.
+     * Detail alternatif
      */
     public function show(Alternative $alternative)
     {
         $this->authorizeAccess($alternative);
 
+        $alternative->load('values.criteria');
+
         return Inertia::render('Alternatives/Show', [
-            'alternative' => $alternative
+            'alternative' => $alternative,
         ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit alternatif
      */
     public function edit(Alternative $alternative)
     {
         $this->authorizeAccess($alternative);
 
         return Inertia::render('Alternatives/Edit', [
-            'alternative' => $alternative
+            'alternative' => $alternative,
         ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update alternatif
      */
     public function update(Request $request, Alternative $alternative)
     {
         $this->authorizeAccess($alternative);
 
-        // unique per user saat update: kecualikan record yang sedang diupdate
+        // Validasi unik per user saat update
         $request->validate([
             'code' => 'required|string|max:10|unique:alternatives,code,' . $alternative->id . ',id,user_id,' . $alternative->user_id,
             'name' => 'required|string|max:255',
@@ -106,26 +108,29 @@ class AlternativeController extends Controller
 
         $alternative->update($request->only('code', 'name'));
 
-        return redirect()->route('alternatives.index')->with('success', 'Alternative updated successfully!');
+        return redirect()->route('alternatives.index')
+            ->with('success', 'Alternative updated successfully!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus alternatif
      */
     public function destroy(Alternative $alternative)
     {
         $this->authorizeAccess($alternative);
 
         $alternative->delete();
-        return redirect()->route('alternatives.index')->with('success', 'Alternative deleted successfully!');
+
+        return redirect()->route('alternatives.index')
+            ->with('success', 'Alternative deleted successfully!');
     }
 
     /**
-     * Cek apakah data milik user login
+     * Pastikan alternatif hanya bisa diakses pemiliknya
      */
     private function authorizeAccess(Alternative $alternative)
     {
-        if ($alternative->user_id != Auth::id()) {
+        if ($alternative->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
     }

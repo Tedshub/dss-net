@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Alternative;
+use App\Observers\AlternativeObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\TopsisService::class, function ($app) {
+            return new \App\Services\TopsisService();
+        });
     }
 
     /**
@@ -21,5 +25,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+        Alternative::observe(AlternativeObserver::class);
     }
 }

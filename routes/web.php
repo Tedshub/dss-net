@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -7,6 +6,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AlternativeController;
+use App\Http\Controllers\ValueController;
+use App\Http\Controllers\TopsisController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -29,8 +30,32 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Alternative routes (all roles can access)
-Route::resource('alternatives', AlternativeController::class);
+
+// Value routes (authenticated users can access)
+Route::middleware('auth')->group(function () {
+
+    // Alternative routes (all roles can access)
+    Route::resource('alternatives', AlternativeController::class);
+    
+    // Matriks Penilaian
+    Route::get('/values', [ValueController::class, 'index'])->name('values.index');
+    Route::post('/values/matrix', [ValueController::class, 'updateMatrix'])->name('values.matrix');
+    Route::post('/values/single', [ValueController::class, 'updateSingle'])->name('values.single');
+
+    // Delete routes for values
+    Route::post('/values/delete-alternative', [ValueController::class, 'deleteAlternativeValues'])->name('values.deleteAlternativeValues');
+    Route::post('/values/delete-all', [ValueController::class, 'deleteAllValues'])->name('values.deleteAll');
+
+    // Standard CRUD routes jika diperlukan
+    Route::resource('values', ValueController::class)->except(['index']);
+
+    Route::get('/topsis', [TopsisController::class, 'index']); // JSON hasil
+
+    // Route baru untuk halaman tampilan
+    Route::get('/calculation', [TopsisController::class, 'view'])->name('calculation.index');
+    // atau bisa juga
+    Route::get('/topsis/view', [TopsisController::class, 'view'])->name('topsis.view');
+});
 
 // Admin routes
 Route::middleware(['auth', 'admin'])->group(function () {

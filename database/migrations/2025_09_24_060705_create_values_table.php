@@ -1,5 +1,5 @@
 <?php
-
+// database/migrations/2025_09_25_000000_create_values_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('values', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('alternative_id');
-            $table->foreign('alternative_id')->references('id')->on('alternatives')->onDelete('cascade');
-            $table->unsignedBigInteger('criteria_id');
-            $table->foreign('criteria_id')->references('id')->on('criterias')->onDelete('cascade');
-            $table->double('score');
+            $table->foreignId('alternative_id')->constrained('alternatives')->onDelete('cascade');
+            $table->foreignId('criteria_id')->constrained('criterias')->onDelete('cascade');
+            $table->double('value')->nullable(); // nilai penilaian, bisa null dulu
+            $table->timestamps();
+
+            $table->unique(['alternative_id', 'criteria_id']); // mencegah duplikasi
         });
     }
 
