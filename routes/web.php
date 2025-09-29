@@ -20,7 +20,7 @@ Route::get('/', function () {
 
 // Dashboard (auth & verified required)
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'otp.verified'])
     ->name('dashboard');
 
 // Profile (auth required)
@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
 
 
 // Value routes (authenticated users can access)
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'otp.verified')->group(function () {
 
     // Alternative routes (all roles can access)
     Route::resource('alternatives', AlternativeController::class);

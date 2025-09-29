@@ -1,19 +1,40 @@
+import { useState, useEffect } from "react";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, Link, useForm } from "@inertiajs/react";
 
-export default function VerifyOtp( { email }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+export default function VerifyOtp({ email }) {
+    const { data, setData, post, processing, errors } = useForm({
         otp: "",
     });
 
-    const submit = (e) => {
-    e.preventDefault();
-    post('/verify-otp');
-  };
+    const [counter, setCounter] = useState(120); // waktu expired (detik)
+    const [canResend, setCanResend] = useState(false);
 
+    // Countdown timer
+    useEffect(() => {
+        let timer;
+        if (counter > 0) {
+            timer = setInterval(() => setCounter((prev) => prev - 1), 1000);
+        } else {
+            setCanResend(true);
+        }
+        return () => clearInterval(timer);
+    }, [counter]);
+
+    const submit = (e) => {
+        e.preventDefault();
+        post("/verify-otp");
+    };
+
+    const resendOtp = () => {
+        // panggil route untuk resend otp
+        post("/resend-otp", { email });
+        setCounter(120); // reset countdown
+        setCanResend(false);
+    };
 
     return (
         <div className="min-h-screen relative overflow-hidden">
@@ -65,7 +86,9 @@ export default function VerifyOtp( { email }) {
                             <h1 className="text-3xl font-bold text-white mb-2">
                                 Verifikasi Email Anda
                             </h1>
-                            <p className="text-white/80 text-sm">Kode OTP telah dikirim ke {email}</p>
+                            <p className="text-white/80 text-sm">
+                                Kode OTP telah dikirim ke {email}
+                            </p>
                             <p className="text-white/80 text-sm">
                                 Masukkan Kode OTP Pada Kolom dibawah ini
                             </p>
@@ -91,7 +114,11 @@ export default function VerifyOtp( { email }) {
                                     required
                                 />
                             </div>
-                               {errors.otp && <p className="text-red-500 text-sm">{errors.otp}</p>}
+                            {errors.otp && (
+                                <p className="text-red-500 text-sm">
+                                    {errors.otp}
+                                </p>
+                            )}
 
                             <div className="pt-2">
                                 <PrimaryButton
@@ -108,8 +135,22 @@ export default function VerifyOtp( { email }) {
                                     )}
                                 </PrimaryButton>
                             </div>
-
                         </form>
+                        {/* Resend OTP */}
+                        <div className="text-center mt-6">
+                            {canResend ? (
+                                <button
+                                    onClick={resendOtp}
+                                    className="text-purple-300 hover:text-white transition-colors text-sm"
+                                >
+                                    Kirim ulang OTP
+                                </button>
+                            ) : (
+                                <p className="text-white/70 text-sm">
+                                    Kirim ulang OTP dalam {counter} detik
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Additional info */}
