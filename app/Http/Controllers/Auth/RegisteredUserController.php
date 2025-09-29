@@ -1,5 +1,5 @@
 <?php
-// RegisteredUserController.php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -7,27 +7,20 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Mail;
+use App\Models\UserOtp;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): Response
     {
         return Inertia::render('Auth/Register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -44,8 +37,22 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // Generate OTP
+        $otp = rand(100000, 999999);
 
-        return redirect(route('dashboard', absolute: false));
+        UserOtp::create([
+        'user_id' => $user->id,
+        'otp' => $otp,
+        'expires_at' => now()->addMinutes(10),
+    ]);
+
+        // Kirim email OTP
+        Mail::raw("Kode OTP Anda adalah: {$otp}", function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject('Verifikasi OTP - Sistem Pendukung Keputusan');
+        });
+
+        // Jangan login dulu, tunggu OTP verifikasi
+        return redirect()->route('otp.verify', ['email' => $user->email]);
     }
 }

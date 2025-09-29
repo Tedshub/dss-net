@@ -16,7 +16,7 @@ export default defineConfig({
 
 
 // I config vite untuk akses dari device lain di jaringan lokal
-// php artisan serve --host=192.168.1.10 --port=8000
+// php artisan serve --host=192.168.50.133 --port=8000
 
 // import { defineConfig } from 'vite';
 // import laravel from 'laravel-vite-plugin';
@@ -34,7 +34,7 @@ export default defineConfig({
 //         host: '0.0.0.0',   // biar bisa diakses dari device lain via IPv4
 //         port: 5173,        // default Vite port
 //         hmr: {
-//             host: '192.168.1.10',  // IP PC kamu
+//             host: '192.168.50.133',  // IP PC kamu
 //         },
 //     },
 // });
