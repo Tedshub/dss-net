@@ -31,9 +31,18 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+    $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+    $user = $request->user();
+
+    // ✅ Jika email sudah verified, set session dan langsung ke dashboard
+    if ($user->email_verified_at) {
+        session(['otp_verified' => true]);
+        return redirect()->intended(route('dashboard'));
+    }
+
+    // ✅ Jika belum verified, redirect ke halaman OTP
+    return redirect()->route('otp.verify.form');
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,7 +37,7 @@ Route::middleware('auth', 'otp.verified')->group(function () {
 
     // Alternative routes (all roles can access)
     Route::resource('alternatives', AlternativeController::class);
-    
+
     // Matriks Penilaian
     Route::get('/values', [ValueController::class, 'index'])->name('values.index');
     Route::post('/values/matrix', [ValueController::class, 'updateMatrix'])->name('values.matrix');
@@ -62,4 +63,4 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('criterias', CriteriaController::class);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
