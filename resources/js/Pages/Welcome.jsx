@@ -29,7 +29,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             {/* Logo */}
                             <div className="flex items-center space-x-2">
                                 <img
-                                    src="/assets/images/logo-2.png"
+                                    src="/assets/images/dss.png"
                                     alt="Arribo Logo"
                                     className="h-10 w-auto"
                                 />
