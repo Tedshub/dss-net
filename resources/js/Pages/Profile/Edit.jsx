@@ -1,8 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
-import DeleteUserForm from './Partials/DeleteUserForm';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import { Head, Link } from "@inertiajs/react";
+import { ArrowLeft } from "lucide-react";
+import DeleteUserForm from "./Partials/DeleteUserForm";
+import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
+import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
 
 export default function Edit({ mustVerifyEmail, status }) {
     return (
@@ -17,7 +17,7 @@ export default function Edit({ mustVerifyEmail, status }) {
                         <div className="flex items-center justify-between h-16">
                             <div className="flex items-center space-x-4">
                                 <Link
-                                    href={route('dashboard')}
+                                    href={route("dashboard")}
                                     className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors duration-200"
                                 >
                                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -33,9 +33,10 @@ export default function Edit({ mustVerifyEmail, status }) {
                 </div>
 
                 {/* Main content */}
-                <div className="py-8">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="space-y-6">
+                <div className="py-6 sm:py-8 lg:py-12">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {/* Grid: 1 kolom di mobile, 2 kolom di desktop */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                             {/* Profile Information Card */}
                             <div className="bg-white rounded-lg shadow-sm border-l-4 border-l-purple-500">
                                 <div className="px-6 py-5 border-b border-gray-100">
@@ -48,7 +49,8 @@ export default function Edit({ mustVerifyEmail, status }) {
                                                 Informasi Profil
                                             </h2>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                Perbarui informasi profil dan alamat email akun Anda.
+                                                Perbarui informasi profil dan
+                                                alamat email akun Anda.
                                             </p>
                                         </div>
                                     </div>
@@ -57,7 +59,7 @@ export default function Edit({ mustVerifyEmail, status }) {
                                     <UpdateProfileInformationForm
                                         mustVerifyEmail={mustVerifyEmail}
                                         status={status}
-                                        className="max-w-2xl"
+                                        className="max-w-full"
                                     />
                                 </div>
                             </div>
@@ -74,18 +76,20 @@ export default function Edit({ mustVerifyEmail, status }) {
                                                 Ubah Kata Sandi
                                             </h2>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                Pastikan akun Anda menggunakan kata sandi yang panjang dan acak untuk keamanan.
+                                                Pastikan akun Anda menggunakan
+                                                kata sandi yang panjang dan acak
+                                                untuk keamanan.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="px-6 py-6">
-                                    <UpdatePasswordForm className="max-w-2xl" />
+                                    <UpdatePasswordForm className="max-w-full" />
                                 </div>
                             </div>
 
-                            {/* Delete Account Card */}
-                            <div className="bg-white rounded-lg shadow-sm border-l-4 border-l-red-500">
+                            {/* Delete Account Card - Full width on both mobile and desktop */}
+                            <div className="bg-white rounded-lg shadow-sm border-l-4 border-l-red-500 lg:col-span-2">
                                 <div className="px-6 py-5 border-b border-gray-100">
                                     <div className="flex items-center">
                                         <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
@@ -96,7 +100,9 @@ export default function Edit({ mustVerifyEmail, status }) {
                                                 Hapus Akun
                                             </h2>
                                             <p className="text-sm text-gray-500 mt-1">
-                                                Setelah akun Anda dihapus, semua sumber daya dan data akan dihapus secara permanen.
+                                                Setelah akun Anda dihapus, semua
+                                                sumber daya dan data akan
+                                                dihapus secara permanen.
                                             </p>
                                         </div>
                                     </div>

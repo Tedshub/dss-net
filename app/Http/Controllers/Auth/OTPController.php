@@ -14,6 +14,11 @@ class OTPController extends Controller
     {
         $user = $request->user();
 
+        // ✅ CEK: Jika email sudah verified, langsung ke dashboard
+        if ($user->email_verified_at) {
+            session(['otp_verified' => true]);
+            return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi!');
+        }
         // generate OTP random 6 digit
         $otp = rand(100000, 999999);
 
@@ -37,8 +42,16 @@ class OTPController extends Controller
 
     public function showVerifyForm(Request $request)
     {
+        $user = $request->user();
+
+        // ✅ CEK: Jika email sudah verified, langsung ke dashboard
+        if ($user->email_verified_at) {
+            session(['otp_verified' => true]);
+            return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi!');
+        }
+
         return inertia('Auth/VerifyOtp', [
-            'email' => $request->user()->email,
+            'email' => $user->email,
         ]);
     }
 

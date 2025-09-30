@@ -12,15 +12,25 @@ class CheckOtpVerified
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next): Response
-    {
-        // Cukup cek session saja, JANGAN cek database
-        // Karena OTP sudah dihapus setelah verifikasi berhasil
-        if (!session('otp_verified')) {
-            return redirect()->route('otp.verify.form')->withErrors([
-                'otp' => 'Anda harus verifikasi OTP terlebih dahulu.'
-            ]);
+     {
+        $user = $request->user();
+
+        // ✅ Jika email sudah verified, auto set session dan lanjutkan
+        if ($user->email_verified_at) {
+            if (!session('otp_verified')) {
+                session(['otp_verified' => true]);
+            }
+            return $next($request);
         }
 
-        return $next($request);
+        // ✅ Jika session ada, lanjutkan
+        if (session('otp_verified')) {
+            return $next($request);
+        }
+
+        // ✅ Jika belum verified, redirect ke form OTP
+        return redirect()->route('otp.verify.form')->withErrors([
+            'otp' => 'Anda harus verifikasi OTP terlebih dahulu.'
+        ]);
     }
 }
