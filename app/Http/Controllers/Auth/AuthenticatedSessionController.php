@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\UserOtp;
+use Illuminate\Support\Facades\Mail;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -40,6 +42,21 @@ class AuthenticatedSessionController extends Controller
         session(['otp_verified' => true]);
         return redirect()->intended(route('dashboard'));
     }
+
+        // Generate OTP
+        $otp = rand(100000, 999999);
+
+        UserOtp::create([
+            'user_id' => $user->id,
+            'otp' => $otp,
+            'expires_at' => now()->addMinutes(2),
+        ]);
+
+        // Kirim email OTP
+        Mail::raw("Kode OTP Anda adalah: {$otp}", function ($message) use ($user) {
+            $message->to($user->email)
+                ->subject('Verifikasi OTP - Sistem Pendukung Keputusan');
+        });
 
     // ✅ Jika belum verified, redirect ke halaman OTP
     return redirect()->route('otp.verify.form');

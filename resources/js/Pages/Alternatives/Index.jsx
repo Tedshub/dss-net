@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from '@inertiajs/react';
 
 export default function Index({ alternatives, flash }) {
     const [showAddModal, setShowAddModal] = useState(false);
@@ -194,8 +195,8 @@ export default function Index({ alternatives, flash }) {
                                     <p className="text-sm sm:text-base text-gray-600">Kelola opsi kebijakan untuk analisis TOPSIS</p>
                                 </div>
                                 <div className="flex-shrink-0">
-                                    <button
-                                        onClick={handleAddAlternative}
+                                    <Link
+                                        href={route ('alternatives.create')}
                                         className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
                                     >
                                         <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -203,80 +204,7 @@ export default function Index({ alternatives, flash }) {
                                         </svg>
                                         <span className="hidden sm:inline">TAMBAHKAN OPSI</span>
                                         <span className="sm:hidden">TAMBAH</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Statistics Cards */}
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
-                                {/* Total Alternatif */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-2 sm:p-3 lg:p-4 hover:shadow-md transition-shadow">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Total Alternatif</p>
-                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{totalAlternatives}</p>
-                                        </div>
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-1">
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Kode Terpendek */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-2 sm:p-3 lg:p-4 hover:shadow-md transition-shadow">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Kode Terpendek</p>
-                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                                                {totalAlternatives > 0 ? Math.min(...alternatives.map(a => a.code.length)) : 0}
-                                            </p>
-                                        </div>
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-1">
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Kode Terpanjang */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-2 sm:p-3 lg:p-4 hover:shadow-md transition-shadow">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Kode Terpanjang</p>
-                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                                                {totalAlternatives > 0 ? Math.max(...alternatives.map(a => a.code.length)) : 0}
-                                            </p>
-                                        </div>
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-1">
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Huruf Terbanyak */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-2 sm:p-3 lg:p-4 hover:shadow-md transition-shadow">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Awalan Terbanyak</p>
-                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
-                                                {mostCommonLetter ? mostCommonLetter[0] : '-'}
-                                            </p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                {mostCommonLetter ? `${mostCommonLetter[1]} alternatif` : 'Belum ada data'}
-                                            </p>
-                                        </div>
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-1">
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
-                                                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
-                                            </svg>
-                                        </div>
-                                    </div>
+                                    </Link>
                                 </div>
                             </div>
 
