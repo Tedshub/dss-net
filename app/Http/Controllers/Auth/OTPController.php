@@ -14,29 +14,32 @@ class OTPController extends Controller
     {
         $user = $request->user();
 
-        // ✅ CEK: Jika email sudah verified, langsung ke dashboard
+        // ✅ Jika sudah verified langsung ke dashboard
         if ($user->email_verified_at) {
             session(['otp_verified' => true]);
             return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi!');
         }
+
         // generate OTP random 6 digit
         $otp = rand(100000, 999999);
 
         // simpan ke DB
-        UserOtp::updateOrCreate(
+        $userOtp = UserOtp::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'otp' => $otp,
-                'expires_at' => Carbon::now()->addMinutes(2),
-                'updated_at' => Carbon::now(),
+                'otp'        => $otp,
+                'expires_at' => now()->addMinutes(2),
+                'updated_at' => now(),
             ]
         );
 
         // kirim email
         Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
 
+        // ✅ kirim expires_at ke React
         return inertia('Auth/VerifyOtp', [
-            'email' => $user->email,
+            'email'      => $user->email,
+            'expires_at' => $userOtp->expires_at,
         ]);
     }
 
@@ -44,14 +47,17 @@ class OTPController extends Controller
     {
         $user = $request->user();
 
-        // ✅ CEK: Jika email sudah verified, langsung ke dashboard
+        // ✅ Jika sudah verified langsung ke dashboard
         if ($user->email_verified_at) {
             session(['otp_verified' => true]);
             return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi!');
         }
 
+        $userOtp = UserOtp::where('user_id', $user->id)->first();
+
         return inertia('Auth/VerifyOtp', [
-            'email' => $user->email,
+            'email'      => $user->email,
+            'expires_at' => optional($userOtp)->expires_at,
         ]);
     }
 
@@ -65,54 +71,35 @@ class OTPController extends Controller
         $userOtp = UserOtp::where('user_id', $user->id)->first();
 
         if (!$userOtp) {
-            // GANTI back() dengan redirect()->back()
             return redirect()->back()->withErrors(['otp' => 'OTP tidak ditemukan, silakan kirim ulang']);
         }
 
         $expiresAt = $userOtp->expires_at instanceof Carbon 
             ? $userOtp->expires_at 
             : Carbon::parse($userOtp->expires_at);
-        
-        $now = Carbon::now();
 
-        \Log::info('Check OTP Debug', [
-            'expires_at_carbon' => $expiresAt->toDateTimeString(),
-            'now' => $now->toDateTimeString(),
-            'isPast' => $expiresAt->isPast(),
-        ]);
-
-        // Cek expired
+        // cek expired
         if ($expiresAt->isPast()) {
-            \Log::warning('OTP Expired');
             return redirect()->back()->withErrors(['otp' => 'OTP expired, silakan kirim ulang']);
         }
 
-        // Cek valid
+        // cek valid
         if ((string)$userOtp->otp !== (string)$request->otp) {
-            \Log::warning('OTP Invalid', [
-                'expected' => $userOtp->otp,
-                'received' => $request->otp,
-            ]);
             return redirect()->back()->withErrors(['otp' => 'OTP tidak valid']);
         }
 
-        // ✅ UPDATE: Set email_verified_at di table users
+        // ✅ update email_verified_at
         if (!$user->email_verified_at) {
             $user->email_verified_at = now();
             $user->save();
-            
-            \Log::info('Email verified', ['user_id' => $user->id]);
         }
 
-        // Jika valid → hapus OTP
+        // hapus OTP
         $userOtp->delete();
 
-        // Tandai session verified
+        // tandai session verified
         session(['otp_verified' => true]);
 
-        \Log::info('OTP Verified Successfully - Redirecting to dashboard');
-
-        // REDIRECT KE DASHBOARD (tanpa back())
         return redirect()->route('dashboard');
     }
 
@@ -124,22 +111,27 @@ class OTPController extends Controller
             return redirect()->back()->withErrors(['otp' => 'User tidak ditemukan.']);
         }
 
-        // Generate OTP baru
+        // generate OTP baru
         $otp = rand(100000, 999999);
 
-        // Update atau buat ulang OTP di tabel user_otps
-        UserOtp::updateOrCreate(
+        // update atau buat ulang OTP
+        $userOtp = UserOtp::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'otp' => $otp,
-                'expires_at' => Carbon::now()->addMinutes(2),
-                'updated_at' => Carbon::now(),
+                'otp'        => $otp,
+                'expires_at' => now()->addMinutes(2),
+                'updated_at' => now(),
             ]
         );
 
-        // Kirim OTP lewat email
+        // kirim OTP via email
         Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
 
-        return redirect()->back()->with('success', 'OTP baru telah dikirim ke email Anda.');
+        // ✅ render ulang VerifyOtp dengan expires_at baru
+        return inertia('Auth/VerifyOtp', [
+            'email'      => $user->email,
+            'expires_at' => $userOtp->expires_at,
+            'success'    => 'OTP baru telah dikirim ke email Anda.',
+        ]);
     }
 }

@@ -16,17 +16,18 @@ class UserSeeder extends Seeder
         // Admin user
         User::create([
             'name' => 'Admin User',
-            'email' => 'admin@gmail.com',
+            'email' => '22670154@upgris.ac.id',
             'password' => Hash::make('password123'), // ganti sesuai kebutuhan
             'role' => 'admin',
+            'email_verified_at' => null,
         ]);
 
         // Guest user
-        User::create([
-            'name' => 'Guest User',
-            'email' => 'guest@gmail.com',
-            'password' => Hash::make('password123'), // ganti sesuai kebutuhan
-            'role' => 'guest',
-        ]);
+        // User::create([
+        //     'name' => 'Guest User',
+        //     'email' => 'guest@gmail.com',
+        //     'password' => Hash::make('password123'), // ganti sesuai kebutuhan
+        //     'role' => 'guest',
+        // ]);
     }
 }

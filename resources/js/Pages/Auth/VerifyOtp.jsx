@@ -5,21 +5,46 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, Link, useForm } from "@inertiajs/react";
 
-export default function VerifyOtp({ email }) {
+export default function VerifyOtp({ email, expires_at }) {
     const { data, setData, post, processing, errors } = useForm({
         otp: "",
     });
 
-    const [counter, setCounter] = useState(120); // waktu expired (detik)
+    const [counter, setCounter] = useState(0); // waktu expired (detik)
     const [canResend, setCanResend] = useState(false);
 
     // Countdown timer
     useEffect(() => {
+        if (expires_at) {
+            const expireTimestamp = Math.floor(
+                new Date(expires_at).getTime() / 1000
+            );
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = expireTimestamp - now;
+
+            if (remaining > 0) {
+                setCounter(remaining);
+                setCanResend(false);
+            } else {
+                setCounter(0);
+                setCanResend(true);
+            }
+        }
+    }, [expires_at]);
+
+    // Timer jalan terus
+    useEffect(() => {
         let timer;
         if (counter > 0) {
-            timer = setInterval(() => setCounter((prev) => prev - 1), 1000);
-        } else {
-            setCanResend(true);
+            timer = setInterval(() => {
+                setCounter((prev) => {
+                    if (prev <= 1) {
+                        setCanResend(true);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
         }
         return () => clearInterval(timer);
     }, [counter]);
@@ -31,9 +56,25 @@ export default function VerifyOtp({ email }) {
 
     const resendOtp = () => {
         // panggil route untuk resend otp
-        post("/resend-otp", { email });
-        setCounter(120); // reset countdown
-        setCanResend(false);
+        post(
+            "/resend-otp",
+            { email },
+            {
+                onSuccess: () => {
+                    // Pastikan server mengirim expires_at baru
+                    if (props.expires_at) {
+                        const expireTimestamp = Math.floor(
+                            new Date(props.expires_at).getTime() / 1000
+                        );
+                        const now = Math.floor(Date.now() / 1000);
+                        const remaining = expireTimestamp - now;
+                        setCounter(remaining > 0 ? remaining : 0);
+                    }
+                    setCanResend(false);
+                },
+            }
+        );
+        
     };
 
     return (

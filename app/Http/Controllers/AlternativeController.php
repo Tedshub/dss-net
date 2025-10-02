@@ -37,7 +37,22 @@ class AlternativeController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Alternatives/Create');
+        // Ambil alternative terakhir
+        $lastAlternative = Alternative::orderBy('id', 'desc')->first();
+
+        if ($lastAlternative) {
+            // Ambil angka terakhir dari kode
+            $lastNumber = (int) filter_var($lastAlternative->code, FILTER_SANITIZE_NUMBER_INT);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        $nextCode = 'A' . $nextNumber;
+
+        return Inertia::render('Alternatives/Create', [
+            'nextCode' => $nextCode,
+        ]);
     }
 
     /**
@@ -63,8 +78,7 @@ class AlternativeController extends Controller
             'user_id' => $userId,
         ]);
 
-        return redirect()->route('alternatives.index')
-            ->with('success', 'Alternative created successfully!');
+        return back()->withInput()->with('success', 'Alternative created successfully!');
     }
 
     /**
