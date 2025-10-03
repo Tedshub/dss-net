@@ -1,5 +1,5 @@
 <?php
-
+// routes/web.php
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -31,12 +31,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 // Value routes (authenticated users can access)
 Route::middleware('auth', 'otp.verified')->group(function () {
-
     // Alternative routes (all roles can access)
     Route::resource('alternatives', AlternativeController::class);
+
+    // Alternative option rating routes
+    Route::get('/alternatives/{alternative}/option', [AlternativeController::class, 'option'])
+        ->name('alternatives.option');
+    Route::post('/alternatives/option/store', [AlternativeController::class, 'storeOption'])
+        ->name('alternatives.option.store');
 
     // Matriks Penilaian
     Route::get('/values', [ValueController::class, 'index'])->name('values.index');

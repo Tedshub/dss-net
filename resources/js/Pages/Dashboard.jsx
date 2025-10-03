@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
-export default function Dashboard({ criterias = [] }) {
+export default function Dashboard({ criterias = [], alternatives = [] }) {
     const [isMobile, setIsMobile] = useState(false);
 
     // Detect mobile screen size - consistent with Values/Index.jsx
@@ -20,6 +20,7 @@ export default function Dashboard({ criterias = [] }) {
 
     // Menghitung statistik berdasarkan data real dari database
     const totalCriteria = criterias.length;
+    const totalAlternatives = alternatives.length;
     const costCriteria = criterias.filter(c => c.type === 'cost').length;
     const benefitCriteria = criterias.filter(c => c.type === 'benefit').length;
     const averageWeight = totalCriteria > 0 ? (criterias.reduce((sum, c) => sum + parseFloat(c.weight), 0) / totalCriteria).toFixed(1) : 0;
@@ -61,12 +62,12 @@ export default function Dashboard({ criterias = [] }) {
                                     </div>
                                 </div>
 
-                                {/* Jumlah Alternatif Card */}
+                                {/* Jumlah Alternatif Card - Sekarang mengambil data dari database */}
                                 <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-2 sm:p-3 lg:p-4 hover:shadow-md transition-shadow">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Jumlah Opsi Kebijakan</p>
-                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">20</p>
+                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{totalAlternatives}</p>
                                         </div>
                                         <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-1">
                                             <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -147,31 +148,31 @@ export default function Dashboard({ criterias = [] }) {
                                     {/* Visualization Card */}
                                     <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white relative overflow-hidden">
                                         <div className="relative z-10">
-                                            <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Visualisasi Proses</h3>
+                                            <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Panduan Penggunaan</h3>
                                             <div className="space-y-3 sm:space-y-4">
                                                 <div className="flex items-start space-x-2 sm:space-x-3">
                                                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <span className="text-xs sm:text-sm font-semibold">1</span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm leading-relaxed">Input Kriteria & Opsi Kebijakan (Untuk kriteria hanya admin yang dapat melakukannya)</span>
+                                                    <span className="text-xs sm:text-sm leading-relaxed">Input Kriteria (Untuk kriteria hanya admin yang dapat melakukannya)</span>
                                                 </div>
                                                 <div className="flex items-start space-x-2 sm:space-x-3">
                                                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <span className="text-xs sm:text-sm font-semibold">2</span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm leading-relaxed">Normalisasi Matriks</span>
+                                                    <span className="text-xs sm:text-sm leading-relaxed">Tambahkan opsi dan jawab pertanyaan setelahnya pada menu Opsi kebijakan</span>
                                                 </div>
                                                 <div className="flex items-start space-x-2 sm:space-x-3">
                                                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <span className="text-xs sm:text-sm font-semibold">3</span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm leading-relaxed">Hitung Solusi Ideal</span>
+                                                    <span className="text-xs sm:text-sm leading-relaxed">Anda dapat mengedit nilai pada menu Matriks Penilaian (jika diperlukan)</span>
                                                 </div>
                                                 <div className="flex items-start space-x-2 sm:space-x-3">
                                                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <span className="text-xs sm:text-sm font-semibold">4</span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm leading-relaxed">Ranking Hasil</span>
+                                                    <span className="text-xs sm:text-sm leading-relaxed">Ranking hasil dan detailnya akan otomatis muncul pada menu Hitung</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -215,78 +216,6 @@ export default function Dashboard({ criterias = [] }) {
                                                     Hasil akan lebih akurat dengan data yang lengkap.
                                                 </p>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Summary Statistics - Mobile Enhanced */}
-                            <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                                {/* Criteria Breakdown */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
-                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3">Breakdown Kriteria</h4>
-                                    <div className="space-y-2 sm:space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm text-gray-600">Benefit</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">{benefitCriteria}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm text-gray-600">Cost</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">{costCriteria}</span>
-                                        </div>
-                                        <div className="pt-2 border-t border-gray-200">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs sm:text-sm text-gray-600">Rata-rata Bobot</span>
-                                                <span className="text-xs sm:text-sm font-semibold text-gray-900">{averageWeight}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* System Status */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6">
-                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3">Status Sistem</h4>
-                                    <div className="space-y-2 sm:space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-600">Database</span>
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Online
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-600">Perhitungan</span>
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Ready
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-600">Last Update</span>
-                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">Just Now</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Performance Metrics */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6 sm:col-span-2 lg:col-span-1">
-                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-3">Performa Sistem</h4>
-                                    <div className="space-y-2 sm:space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-600">Response Time</span>
-                                            <span className="text-xs sm:text-sm font-semibold text-green-600">0.2s</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-600">Uptime</span>
-                                            <span className="text-xs sm:text-sm font-semibold text-green-600">99.9%</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-600">Memory Usage</span>
-                                            <span className="text-xs sm:text-sm font-semibold text-yellow-600">45%</span>
                                         </div>
                                     </div>
                                 </div>

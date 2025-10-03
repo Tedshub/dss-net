@@ -1,7 +1,7 @@
 // resources/js/Pages/Values/Index.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function Index({ matrix, criterias, alternatives, flash }) {
     const [editingCell, setEditingCell] = useState(null);
@@ -15,6 +15,7 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
     const [confirmAction, setConfirmAction] = useState(null);
     const [confirmMessage, setConfirmMessage] = useState('');
     const [isMobile, setIsMobile] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Detect mobile screen size
     useEffect(() => {
@@ -41,6 +42,16 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
             showAlertNotification(flash.success, 'success');
         }
     }, [flash]);
+
+    // Filter alternatives based on search term
+    const filteredMatrix = useMemo(() => {
+        if (!searchTerm) return localMatrix;
+
+        return localMatrix.filter(row =>
+            row.alternative.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            row.alternative.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [localMatrix, searchTerm]);
 
     // Function to show alert notification
     const showAlertNotification = (message, type = 'success') => {
@@ -205,6 +216,11 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
         setShowConfirmDialog(true);
     };
 
+    // Clear search term
+    const clearSearch = () => {
+        setSearchTerm('');
+    };
+
     // Calculate statistics based on local matrix
     const totalAlternatives = alternatives.length;
     const totalCriterias = criterias.length;
@@ -219,8 +235,30 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4 mb-3 sm:mb-4 max-w-full">
             <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm mb-1">{row.alternative.code}</div>
-                    <div className="text-xs text-gray-600 break-words pr-2">{row.alternative.name}</div>
+                    <div className="font-medium text-gray-900 text-sm mb-1">
+                        {searchTerm ? (
+                            <span dangerouslySetInnerHTML={{
+                                __html: row.alternative.code.replace(
+                                    new RegExp(`(${searchTerm})`, 'gi'),
+                                    '<mark class="bg-yellow-200">$1</mark>'
+                                )
+                            }} />
+                        ) : (
+                            row.alternative.code
+                        )}
+                    </div>
+                    <div className="text-xs text-gray-600 break-words pr-2">
+                        {searchTerm ? (
+                            <span dangerouslySetInnerHTML={{
+                                __html: row.alternative.name.replace(
+                                    new RegExp(`(${searchTerm})`, 'gi'),
+                                    '<mark class="bg-yellow-200">$1</mark>'
+                                )
+                            }} />
+                        ) : (
+                            row.alternative.name
+                        )}
+                    </div>
                 </div>
                 {row.values.some(cell => cell.value !== null && cell.value !== '') && (
                     <button
@@ -362,7 +400,7 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                                     </svg>
                                                 ) : (
                                                     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586 4.293 4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
                                                     </svg>
                                                 )}
                                             </div>
@@ -453,12 +491,26 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Kelengkapan</p>
-                                            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">{completionPercentage}%</p>
+                                            <p className={`text-lg sm:text-xl lg:text-2xl font-bold truncate ${
+                                                completionPercentage === 100 ? 'text-green-600' : 'text-red-600'
+                                            }`}>
+                                                {completionPercentage}%
+                                            </p>
                                         </div>
-                                        <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-1">
+                                        <div className={`w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ml-1 ${
+                                            completionPercentage === 100
+                                                ? 'bg-gradient-to-br from-green-500 to-emerald-500'
+                                                : 'bg-gradient-to-br from-orange-500 to-red-500'
+                                        }`}>
                                             <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
-                                                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                                                {completionPercentage === 100 ? (
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                                ) : (
+                                                    <>
+                                                        <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+                                                        <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                                                    </>
+                                                )}
                                             </svg>
                                         </div>
                                     </div>
@@ -476,6 +528,12 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                         <p className="text-xs sm:text-sm text-blue-700 leading-relaxed">
                                             Klik pada cell untuk mengedit nilai. Tekan Enter untuk menyimpan atau Esc untuk membatalkan.
                                             Nilai akan tersimpan otomatis saat cell kehilangan fokus.
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-blue-700 leading-relaxed">
+                                            Anda juga dapat mengisi nilai melalui pertanyaan yang ada pada menu Opsi Kebijakan.
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-blue-700 leading-relaxed">
+                                            Pastikan kelengkapan mencapai 100% sebelum melanjutkan ke tahap berikutnya.
                                         </p>
                                     </div>
                                 </div>
@@ -505,18 +563,60 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                 <>
                                     {/* Desktop/Tablet Table View */}
                                     <div className="hidden md:block bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
-                                            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Tabel Matriks Penilaian</h2>
-                                            {filledCells > 0 && (
-                                                <button
-                                                    onClick={handleDeleteAllValues}
-                                                    className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                                >
-                                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
-                                                    </svg>
-                                                    Hapus Semua
-                                                </button>
+                                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                                                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Tabel Matriks Penilaian</h2>
+
+                                                <div className="flex items-center space-x-3">
+                                                    {/* Search Bar */}
+                                                    <div className="relative w-full sm:w-72 lg:w-96">
+                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                            <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                                                            </svg>
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Cari berdasarkan kode atau nama alternatif..."
+                                                            value={searchTerm}
+                                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                                            className="block w-full pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                                                        />
+                                                        {searchTerm && (
+                                                            <button
+                                                                onClick={clearSearch}
+                                                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                                                title="Hapus pencarian"
+                                                            >
+                                                                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {filledCells > 0 && (
+                                                        <button
+                                                            onClick={handleDeleteAllValues}
+                                                            className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                                        >
+                                                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                            </svg>
+                                                            Hapus Semua
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Search Results Info */}
+                                            {searchTerm && (
+                                                <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600">
+                                                    Menampilkan {filteredMatrix.length} dari {localMatrix.length} alternatif untuk "{searchTerm}"
+                                                    {filteredMatrix.length === 0 && (
+                                                        <span className="text-red-600 ml-1">- Tidak ada data yang ditemukan</span>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
 
@@ -550,59 +650,107 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
-                                                    {localMatrix.map((row, rowIndex) => (
-                                                        <tr key={row.alternative.id} className="hover:bg-gray-50 transition-colors">
-                                                            <td className="px-3 sm:px-4 py-3 sm:py-4 sticky left-0 bg-white border-r border-gray-200">
-                                                                <div className="space-y-1">
-                                                                    <div className="font-medium text-gray-900 text-sm">{row.alternative.code}</div>
-                                                                    <div className="text-xs sm:text-sm text-gray-600 max-w-[140px] truncate">
-                                                                        {row.alternative.name}
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            {row.values.map((cell, cellIndex) => (
-                                                                <td key={`${cell.alternative_id}-${cell.criteria_id}`} className="px-2 sm:px-3 py-3 sm:py-4 text-center border-r border-gray-200">
-                                                                    {editingCell === `${cell.alternative_id}-${cell.criteria_id}` ? (
-                                                                        <input
-                                                                            type="number"
-                                                                            step="0.01"
-                                                                            value={tempValue}
-                                                                            onChange={(e) => setTempValue(e.target.value)}
-                                                                            onBlur={() => handleCellBlur(cell.alternative_id, cell.criteria_id)}
-                                                                            onKeyDown={(e) => handleKeyPress(e, cell.alternative_id, cell.criteria_id)}
-                                                                            className="w-full px-1.5 py-1 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-center text-sm max-w-[80px]"
-                                                                            autoFocus
-                                                                            disabled={isSaving}
-                                                                        />
-                                                                    ) : (
-                                                                        <div
-                                                                            onClick={() => handleCellClick(cell.alternative_id, cell.criteria_id, cell.value)}
-                                                                            className={`min-h-[32px] flex items-center justify-center cursor-pointer rounded px-1.5 py-1 transition-colors text-sm mx-auto max-w-[80px] ${
-                                                                                cell.value !== null && cell.value !== ''
-                                                                                    ? 'bg-purple-50 text-purple-900 hover:bg-purple-100'
-                                                                                    : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-                                                                            }`}
-                                                                        >
-                                                                            {cell.value !== null && cell.value !== '' ? cell.value : '-'}
-                                                                        </div>
-                                                                    )}
-                                                                </td>
-                                                            ))}
-                                                            <td className="px-2 sm:px-3 py-3 sm:py-4 text-center">
-                                                                {row.values.some(cell => cell.value !== null && cell.value !== '') && (
-                                                                    <button
-                                                                        onClick={() => handleDeleteAlternativeValues(row.alternative)}
-                                                                        className="inline-flex items-center p-1.5 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                                                        title={`Hapus semua nilai untuk ${row.alternative.name}`}
-                                                                    >
-                                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                    {filteredMatrix.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan={criterias.length + 2} className="px-3 sm:px-4 py-6 sm:py-8 text-center text-gray-500">
+                                                                {searchTerm ? (
+                                                                    <div>
+                                                                        <svg className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-300 mb-3 sm:mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
                                                                         </svg>
-                                                                    </button>
+                                                                        <p className="text-sm sm:text-base mb-2">Tidak ada alternatif yang cocok dengan pencarian "{searchTerm}"</p>
+                                                                        <button
+                                                                            onClick={clearSearch}
+                                                                            className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm"
+                                                                        >
+                                                                            Hapus filter pencarian
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div>
+                                                                        <svg className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-300 mb-3 sm:mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                                                                        </svg>
+                                                                        <p className="text-sm sm:text-base">Belum ada data matriks yang tersedia</p>
+                                                                    </div>
                                                                 )}
                                                             </td>
                                                         </tr>
-                                                    ))}
+                                                    ) : (
+                                                        filteredMatrix.map((row, rowIndex) => (
+                                                            <tr key={row.alternative.id} className="hover:bg-gray-50 transition-colors">
+                                                                <td className="px-3 sm:px-4 py-3 sm:py-4 sticky left-0 bg-white border-r border-gray-200">
+                                                                    <div className="space-y-1">
+                                                                        <div className="font-medium text-gray-900 text-sm">
+                                                                            {searchTerm ? (
+                                                                                <span dangerouslySetInnerHTML={{
+                                                                                    __html: row.alternative.code.replace(
+                                                                                        new RegExp(`(${searchTerm})`, 'gi'),
+                                                                                        '<mark class="bg-yellow-200">$1</mark>'
+                                                                                    )
+                                                                                }} />
+                                                                            ) : (
+                                                                                row.alternative.code
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-xs sm:text-sm text-gray-600 max-w-[140px] truncate">
+                                                                            {searchTerm ? (
+                                                                                <span dangerouslySetInnerHTML={{
+                                                                                    __html: row.alternative.name.replace(
+                                                                                        new RegExp(`(${searchTerm})`, 'gi'),
+                                                                                        '<mark class="bg-yellow-200">$1</mark>'
+                                                                                    )
+                                                                                }} />
+                                                                            ) : (
+                                                                                row.alternative.name
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                {row.values.map((cell, cellIndex) => (
+                                                                    <td key={`${cell.alternative_id}-${cell.criteria_id}`} className="px-2 sm:px-3 py-3 sm:py-4 text-center border-r border-gray-200">
+                                                                        {editingCell === `${cell.alternative_id}-${cell.criteria_id}` ? (
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={tempValue}
+                                                                                onChange={(e) => setTempValue(e.target.value)}
+                                                                                onBlur={() => handleCellBlur(cell.alternative_id, cell.criteria_id)}
+                                                                                onKeyDown={(e) => handleKeyPress(e, cell.alternative_id, cell.criteria_id)}
+                                                                                className="w-full px-1.5 py-1 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-center text-sm max-w-[80px]"
+                                                                                autoFocus
+                                                                                disabled={isSaving}
+                                                                            />
+                                                                        ) : (
+                                                                            <div
+                                                                                onClick={() => handleCellClick(cell.alternative_id, cell.criteria_id, cell.value)}
+                                                                                className={`min-h-[32px] flex items-center justify-center cursor-pointer rounded px-1.5 py-1 transition-colors text-sm mx-auto max-w-[80px] ${
+                                                                                    cell.value !== null && cell.value !== ''
+                                                                                        ? 'bg-purple-50 text-purple-900 hover:bg-purple-100'
+                                                                                        : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                                                                }`}
+                                                                            >
+                                                                                {cell.value !== null && cell.value !== '' ? cell.value : '-'}
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
+                                                                ))}
+                                                                <td className="px-2 sm:px-3 py-3 sm:py-4 text-center">
+                                                                    {row.values.some(cell => cell.value !== null && cell.value !== '') && (
+                                                                        <button
+                                                                            onClick={() => handleDeleteAlternativeValues(row.alternative)}
+                                                                            className="inline-flex items-center p-1.5 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                                                            title={`Hapus semua nilai untuk ${row.alternative.name}`}
+                                                                        >
+                                                                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                                            </svg>
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -611,7 +759,11 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                         <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200 bg-gray-50">
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 text-xs sm:text-sm text-gray-600">
                                                 <div>
-                                                    Menampilkan {totalAlternatives} opsi kebijakan × {totalCriterias} kriteria = {totalCells} cell
+                                                    {searchTerm ? (
+                                                        `Menampilkan ${filteredMatrix.length} dari ${localMatrix.length} alternatif untuk "${searchTerm}"`
+                                                    ) : (
+                                                        `Menampilkan ${localMatrix.length} alternatif × ${totalCriterias} kriteria = ${totalCells} cell`
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center space-x-3 sm:space-x-4">
                                                     <div className="flex items-center space-x-2">
@@ -629,31 +781,101 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
 
                                     {/* Mobile Card View */}
                                     <div className="md:hidden">
-                                        <div className="flex justify-between items-center mb-3 bg-white rounded-lg border border-gray-200 p-3">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 bg-white rounded-lg border border-gray-200 p-3">
                                             <h2 className="text-base font-semibold text-gray-900">Matriks Penilaian</h2>
-                                            {filledCells > 0 && (
-                                                <button
-                                                    onClick={handleDeleteAllValues}
-                                                    className="inline-flex items-center px-2 py-1 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                                >
-                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
-                                                    </svg>
-                                                    Hapus Semua
-                                                </button>
-                                            )}
+
+                                            <div className="flex items-center space-x-2">
+                                                {/* Search Bar Mobile */}
+                                                <div className="relative flex-1 min-w-0">
+                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <svg className="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                                                        </svg>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Cari alternatif..."
+                                                        value={searchTerm}
+                                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                                        className="block w-full pl-8 pr-8 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                                                    />
+                                                    {searchTerm && (
+                                                        <button
+                                                            onClick={clearSearch}
+                                                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                                            title="Hapus pencarian"
+                                                        >
+                                                            <svg className="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {filledCells > 0 && (
+                                                    <button
+                                                        onClick={handleDeleteAllValues}
+                                                        className="inline-flex items-center px-2 py-1 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                                    >
+                                                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                        </svg>
+                                                        Hapus Semua
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
 
+                                        {/* Search Results Info Mobile */}
+                                        {searchTerm && (
+                                            <div className="mb-3 text-xs text-gray-600 bg-white rounded-lg border border-gray-200 p-3">
+                                                Menampilkan {filteredMatrix.length} dari {localMatrix.length} alternatif untuk "{searchTerm}"
+                                                {filteredMatrix.length === 0 && (
+                                                    <span className="text-red-600 ml-1">- Tidak ada data yang ditemukan</span>
+                                                )}
+                                            </div>
+                                        )}
+
                                         <div className="space-y-0">
-                                            {localMatrix.map((row) => (
-                                                <MobileMatrixCard key={row.alternative.id} row={row} />
-                                            ))}
+                                            {filteredMatrix.length === 0 ? (
+                                                <div className="bg-white rounded-lg border border-gray-200 p-4 text-center text-gray-500">
+                                                    {searchTerm ? (
+                                                        <div>
+                                                            <svg className="mx-auto h-8 w-8 text-gray-300 mb-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+                                                            </svg>
+                                                            <p className="text-sm mb-2">Tidak ada alternatif yang cocok dengan pencarian "{searchTerm}"</p>
+                                                            <button
+                                                                onClick={clearSearch}
+                                                                className="text-blue-600 hover:text-blue-800 text-xs"
+                                                            >
+                                                                Hapus filter pencarian
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <svg className="mx-auto h-8 w-8 text-gray-300 mb-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                                                            </svg>
+                                                            <p className="text-sm">Belum ada data matriks yang tersedia</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                filteredMatrix.map((row) => (
+                                                    <MobileMatrixCard key={row.alternative.id} row={row} />
+                                                ))
+                                            )}
                                         </div>
 
                                         {/* Mobile Footer Stats */}
                                         <div className="bg-white rounded-lg border border-gray-200 p-3 mt-3">
                                             <div className="text-center text-sm text-gray-600 mb-2">
-                                                {totalAlternatives} alternatif × {totalCriterias} kriteria = {totalCells} cell
+                                                {searchTerm ? (
+                                                    `${filteredMatrix.length} alternatif × ${totalCriterias} kriteria`
+                                                ) : (
+                                                    `${localMatrix.length} alternatif × ${totalCriterias} kriteria = ${totalCells} cell`
+                                                )}
                                             </div>
                                             <div className="flex justify-center space-x-4">
                                                 <div className="flex items-center space-x-2">
