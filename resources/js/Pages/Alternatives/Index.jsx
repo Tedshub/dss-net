@@ -72,8 +72,8 @@ export default function Index({ alternatives, flash }) {
         setShowDeleteModal(true);
     };
 
-    const handleGoToOptionRating = (alternative) => {
-        router.visit(route('alternatives.option', alternative.id));
+    const handleGoToAssessmentList = (alternative) => {
+        router.visit(route('alternatives.list', alternative.id));
     };
 
     const submitAdd = (e) => {
@@ -131,7 +131,7 @@ export default function Index({ alternatives, flash }) {
                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                     </svg>
-                    Lengkap
+                    Terjawab
                 </span>
             );
         } else {
@@ -140,7 +140,7 @@ export default function Index({ alternatives, flash }) {
                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
                     </svg>
-                    Belum Lengkap
+                    Belum Terjawab
                 </span>
             );
         }
@@ -185,7 +185,7 @@ export default function Index({ alternatives, flash }) {
             </div>
             <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-1">
                 <button
-                    onClick={() => handleGoToOptionRating(alternative)}
+                    onClick={() => handleGoToAssessmentList(alternative)}
                     className="inline-flex items-center px-2 sm:px-3 py-1 border border-purple-300 text-purple-600 rounded text-xs font-medium hover:bg-purple-50 hover:border-purple-400 transition-colors"
                 >
                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -385,9 +385,9 @@ export default function Index({ alternatives, flash }) {
                                                             <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
                                                                 <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                                                                     <button
-                                                                        onClick={() => handleGoToOptionRating(alternative)}
+                                                                        onClick={() => handleGoToAssessmentList(alternative)}
                                                                         className="inline-flex items-center px-2 sm:px-3 py-1 border border-purple-300 text-purple-600 rounded text-xs font-medium hover:bg-purple-50 hover:border-purple-400 transition-colors"
-                                                                        title="Isi/Edit Penilaian Opsi"
+                                                                        title="Isi/Edit Penilaian"
                                                                     >
                                                                         <svg className="w-3 h-3 sm:mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                                             <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
@@ -483,14 +483,14 @@ export default function Index({ alternatives, flash }) {
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-300 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm">Penilaian Lengkap</span>
+                                                <span className="text-xs sm:text-sm">Penilaian Terjawab</span>
                                             </div>
                                             <span className="text-xs sm:text-sm font-semibold">{completedAlternatives} opsi</span>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-2 h-2 sm:w-3 sm:h-3 bg-amber-300 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm">Belum Lengkap</span>
+                                                <span className="text-xs sm:text-sm">Belum Terjawab</span>
                                             </div>
                                             <span className="text-xs sm:text-sm font-semibold">{incompleteAlternatives} opsi</span>
                                         </div>

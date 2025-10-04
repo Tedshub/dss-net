@@ -19,6 +19,7 @@ class AlternativeController extends Controller
     /**
      * Tampilkan daftar alternatif milik user yang login
      */
+
     public function index()
     {
         $userId = Auth::id();
@@ -62,6 +63,7 @@ class AlternativeController extends Controller
     /**
      * Simpan alternatif baru ke database
      */
+
     public function store(Request $request)
     {
         $userId = Auth::id();
@@ -81,9 +83,9 @@ class AlternativeController extends Controller
             'user_id' => $userId,
         ]);
 
-        // Redirect ke halaman penilaian opsi
-        return redirect()->route('alternatives.option', $alternative)
-            ->with('success', 'Opsi berhasil dibuat. Silakan isi penilaian berdasarkan kriteria.');
+        // Redirect ke halaman daftar penilaian
+        return redirect()->route('alternatives.list', $alternative)
+            ->with('success', 'Opsi berhasil dibuat. Silakan isi daftar penilaian.');
     }
 
     /**
@@ -155,31 +157,31 @@ class AlternativeController extends Controller
     }
 
     /**
-     * Tampilkan halaman penilaian opsi setelah create alternative
+     * Tampilkan halaman daftar penilaian setelah create alternative
      */
-    public function option(Alternative $alternative)
+    public function list(Alternative $alternative)
     {
         $this->authorizeAccess($alternative);
 
         $criterias = \App\Models\Criteria::all();
 
-        return Inertia::render('Alternatives/Option', [
+        return Inertia::render('Alternatives/List', [
             'alternative' => $alternative,
             'criterias' => $criterias,
         ]);
     }
 
     /**
-     * Simpan hasil penilaian opsi ke tabel values
+     * Simpan hasil daftar penilaian ke tabel values
      */
-    public function storeOption(Request $request)
+    public function storeList(Request $request)
     {
         $userId = Auth::id();
 
         $request->validate([
             'alternative_id' => 'required|exists:alternatives,id',
-            'ratings' => 'required|array|min:10',
-            'ratings.*' => 'required|numeric'
+            'answers' => 'required|array|min:10',
+            'answers.*' => 'required|numeric'
         ]);
 
         // Pastikan alternative milik user ini
@@ -190,10 +192,10 @@ class AlternativeController extends Controller
         // Ambil semua kriteria
         $criterias = \App\Models\Criteria::orderBy('code')->get();
 
-        // Simpan setiap penilaian ke tabel values
-        foreach ($request->ratings as $criteriaId => $value) {
-            // criteriaId = 1-10, map ke criteria berdasarkan urutan
-            $criteriaIndex = $criteriaId - 1;
+        // Simpan setiap jawaban ke tabel values
+        foreach ($request->answers as $itemId => $value) {
+            // itemId = 1-10, map ke criteria berdasarkan urutan
+            $criteriaIndex = $itemId - 1;
 
             if (isset($criterias[$criteriaIndex])) {
                 \App\Models\Value::updateOrCreate(

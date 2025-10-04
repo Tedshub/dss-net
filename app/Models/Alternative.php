@@ -12,6 +12,11 @@ class Alternative extends Model
         'user_id',
     ];
 
+    // TAMBAHKAN bagian ini
+    protected $casts = [
+        'user_id' => 'integer',
+    ];
+
     /**
      * Relasi ke User (pembuat alternative)
      */

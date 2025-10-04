@@ -36,11 +36,11 @@ Route::middleware('auth', 'otp.verified')->group(function () {
     // Alternative routes (all roles can access)
     Route::resource('alternatives', AlternativeController::class);
 
-    // Alternative option rating routes
-    Route::get('/alternatives/{alternative}/option', [AlternativeController::class, 'option'])
-        ->name('alternatives.option');
-    Route::post('/alternatives/option/store', [AlternativeController::class, 'storeOption'])
-        ->name('alternatives.option.store');
+    // Alternative assessment list routes
+    Route::get('/alternatives/{alternative}/list', [AlternativeController::class, 'list'])
+        ->name('alternatives.list');
+    Route::post('/alternatives/list/store', [AlternativeController::class, 'storeList'])
+        ->name('alternatives.list.store');
 
     // Matriks Penilaian
     Route::get('/values', [ValueController::class, 'index'])->name('values.index');
