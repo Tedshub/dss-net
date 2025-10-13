@@ -230,9 +230,9 @@ export default function AssessmentList({ alternative, criterias }) {
                                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                                                         {item.item}
                                                     </h3>
-                                                    <p className="text-xs sm:text-sm text-gray-500">
+                                                    {/* <p className="text-xs sm:text-sm text-gray-500">
                                                         {item.subtitle}
-                                                    </p>
+                                                    </p> */}
                                                     <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
                                                         Kriteria: {item.criteria_code}
                                                     </span>

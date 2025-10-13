@@ -309,7 +309,7 @@ export default function Index({ initialData = null }) {
                                         <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
                                             <Award className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-yellow-800" />
                                         </div>
-                                        <h3 className="text-base sm:text-xl lg:text-2xl font-bold mb-2">Alternatif Terpilih</h3>
+                                        <h3 className="text-base sm:text-xl lg:text-2xl font-bold mb-2">Alternatif Kebijakan yang Direkomendasikan</h3>
                                         <div className="bg-white bg-opacity-20 rounded-lg p-3 sm:p-4 inline-block max-w-full">
                                             <p className="text-sm sm:text-lg font-semibold truncate break-words px-2">{result.ranking[0].name}</p>
                                             <p className="text-xs sm:text-sm opacity-90">Kode: {result.ranking[0].code}</p>
