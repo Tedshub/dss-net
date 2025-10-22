@@ -25,6 +25,10 @@ export default function Dashboard({ criterias = [], alternatives = [] }) {
     const benefitCriteria = criterias.filter(c => c.type === 'benefit').length;
     const averageWeight = totalCriteria > 0 ? (criterias.reduce((sum, c) => sum + parseFloat(c.weight), 0) / totalCriteria).toFixed(1) : 0;
 
+    const handleManualBookClick = () => {
+        window.open('/assets/pdf/manual_book_rks.pdf', '_blank');
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Fixed Layout Container */}
@@ -39,9 +43,20 @@ export default function Dashboard({ criterias = [], alternatives = [] }) {
                             {/* Header */}
                             <div className="mb-4 sm:mb-6">
                                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Dashboard</h1>
-                                <div className="text-xs sm:text-sm lg:text-base">
-                                    <p className="text-gray-600 mb-1">Metode yang digunakan:</p>
-                                    <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800">Metode TOPSIS</h2>
+                                <div className="text-xs sm:text-sm lg:text-base flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 mb-1">Metode yang digunakan:</p>
+                                        <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800">Metode TOPSIS</h2>
+                                    </div>
+                                    <button
+                                        onClick={handleManualBookClick}
+                                        className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02]"
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+                                        </svg>
+                                        <span className="font-medium text-sm sm:text-base">Manual Book</span>
+                                    </button>
                                 </div>
                             </div>
 
