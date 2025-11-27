@@ -37,7 +37,7 @@ export default function AssessmentList({ alternative, criterias }) {
             options: [
                 { label: 'Komponen dan Indikator dengan skor rendah, dengan warna merah', value: 5 },
                 { label: 'Komponen dan Indikator dengan skor sedang, dengan warna kuning', value: 4 },
-                { label: 'Indikator yang mengalami penurunan paling tinggi', value: 3 }
+                { label: 'Indikator yang mengalami penurunan paling tinggi atau kenaikan paling rendah', value: 3 }
             ]
         },
         {
@@ -261,9 +261,9 @@ export default function AssessmentList({ alternative, criterias }) {
                                                             <span className="text-sm sm:text-base text-gray-700 leading-relaxed">
                                                                 {String.fromCharCode(97 + optIndex)}. {option.label}
                                                             </span>
-                                                            <span className="ml-2 inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
+                                                            {/* <span className="ml-2 inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
                                                                 Nilai: {option.value}
-                                                            </span>
+                                                            </span> */}
                                                         </div>
                                                     </label>
                                                 ))}
