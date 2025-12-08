@@ -61,8 +61,12 @@ export default function VerifyOtp({ email }) {
             {/* Navigation */}
             <nav className="relative z-10 flex items-center justify-between px-8 py-6">
                 <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                        <div className="w-5 h-5 bg-gradient-to-br from-purple-600 to-pink-600 rounded"></div>
+                    <div className="flex items-center space-x-2">
+                        <img
+                            src="/assets/images/dss.png"
+                            alt="RKS Logo"
+                            className="h-8 sm:h-10 w-auto"
+                        />
                     </div>
                     <span className="text-white text-xl font-bold">RKS</span>
                 </div>
