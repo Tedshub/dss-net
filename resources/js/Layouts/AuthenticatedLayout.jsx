@@ -32,8 +32,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
     // Handler untuk klik item navigasi
     const handleNavigationClick = (e, item) => {
-        // Jika sidebar belum terbuka, buka dulu dan prevent navigasi
-        if (!sidebarExpanded) {
+        // Jika sidebar belum terbuka, buka dulu dan prevent navigasi (hanya di desktop)
+        if (!sidebarExpanded && !isMobile) {
             e.preventDefault();
             setSidebarExpanded(true);
             return;
@@ -45,8 +45,10 @@ export default function AuthenticatedLayout({ header, children }) {
             return;
         }
 
-        // Jika ada route dan sidebar sudah terbuka, lanjutkan navigasi
-        // Link component akan handle navigasi secara otomatis
+        // Tutup sidebar di mobile setelah klik link
+        if (isMobile) {
+            setSidebarExpanded(false);
+        }
     };
 
     // Handler untuk klik area sidebar (bukan item navigasi)
@@ -155,10 +157,31 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
+            {/* Mobile Sidebar Toggle Button */}
+            {isMobile && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setSidebarExpanded(!sidebarExpanded);
+                    }}
+                    className={`fixed top-1/2 -translate-y-1/2 z-[60] bg-purple-600 text-white p-2 rounded-r-lg shadow-lg transition-all duration-300 flex items-center justify-center focus:outline-none ${
+                        sidebarExpanded ? 'left-64' : 'left-0'
+                    }`}
+                >
+                    {sidebarExpanded ? (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                    ) : (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                    )}
+                </button>
+            )}
+
             {/* Sidebar */}
             <div
                 className={`sidebar fixed inset-y-0 left-0 z-50 bg-white shadow-xl transition-all duration-300 ease-in-out ${
-                    sidebarExpanded ? "w-64" : "w-16"
+                    isMobile 
+                        ? (sidebarExpanded ? "w-64 translate-x-0" : "w-64 -translate-x-full")
+                        : (sidebarExpanded ? "w-64 translate-x-0" : "w-16 translate-x-0")
                 }`}
                 onClick={handleSidebarClick}
             >
@@ -173,7 +196,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                     <span
                         className={`ml-3 text-gray-800 font-bold text-lg transition-all duration-300 ${
-                            sidebarExpanded ? "opacity-100" : "opacity-0 w-0"
+                            sidebarExpanded || isMobile ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
                         }`}
                     >
                         DSS RKS
@@ -189,7 +212,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 href={item.route ? route(item.route) : "#"}
                                 className={`nav-item flex items-center px-3 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
                                     item.active
-                                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg"
+                                        ? "bg-purple-600 text-white shadow-lg"
                                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                                 }`}
                                 onClick={(e) => handleNavigationClick(e, item)}
@@ -205,16 +228,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </div>
                                 <span
                                     className={`ml-3 font-medium transition-all duration-300 ${
-                                        sidebarExpanded
+                                        sidebarExpanded || isMobile
                                             ? "opacity-100"
-                                            : "opacity-0 w-0"
+                                            : "opacity-0 w-0 overflow-hidden"
                                     }`}
                                 >
                                     {item.name}
                                 </span>
 
                                 {/* Tooltip untuk saat sidebar tertutup */}
-                                {!sidebarExpanded && (
+                                {!sidebarExpanded && !isMobile && (
                                     <div className="absolute left-16 bg-gray-800 text-white text-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                                         {item.name}
                                         <div className="absolute top-1/2 -left-1 transform -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
@@ -226,7 +249,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 </nav>
 
                 {/* Status indicator untuk behavior */}
-                {!sidebarExpanded && (
+                {!sidebarExpanded && !isMobile && (
                     <div className="absolute bottom-4 left-4">
                         <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded opacity-75">
                             Click to expand
@@ -235,7 +258,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 )}
 
                 {/* Role indicator (optional) */}
-                {sidebarExpanded && (
+                {(sidebarExpanded || isMobile) && (
                     <div className="absolute bottom-4 left-4 right-4">
                         <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded text-center border">
                             Role:{" "}
@@ -249,7 +272,7 @@ export default function AuthenticatedLayout({ header, children }) {
             {/* Main Content */}
             <div
                 className={`flex-1 flex flex-col transition-all duration-300 ${
-                    sidebarExpanded ? "ml-64" : "ml-16"
+                    isMobile ? "ml-0" : (sidebarExpanded ? "ml-64" : "ml-16")
                 }`}
             >
                 {/* Top Navigation - DIBUAT STICKY */}
@@ -287,7 +310,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <button className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                                            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                                            <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center">
                                                 <span className="text-white text-sm font-medium">
                                                     {user.name
                                                         .charAt(0)
@@ -336,7 +359,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                                 </svg>
-                                                <span>Profile</span>
+                                                <span>Profil</span>
                                             </div>
                                         </Dropdown.Link>
                                     
@@ -347,7 +370,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                                     </svg>
-                                                    <span>User Manage</span>
+                                                    <span>Karyawan</span>
                                                 </div>
                                             </Dropdown.Link>
                                         )}
@@ -363,7 +386,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
                                                 </svg>
-                                                <span>Log Out</span>
+                                                <span>Keluar</span>
                                             </div>
                                         </Dropdown.Link>
                                     </Dropdown.Content>

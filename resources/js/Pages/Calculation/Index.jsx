@@ -293,7 +293,7 @@ export default function Index({ initialData = null }) {
                                 <div className="flex-shrink-0">
                                     <button
                                         onClick={refreshCalculation}
-                                        className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-blue-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
                                     >
                                         <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" />
                                         <span className="hidden sm:inline">REFRESH PERHITUNGAN</span>
@@ -304,7 +304,7 @@ export default function Index({ initialData = null }) {
 
                             {/* Winner Card */}
                             {result?.ranking?.length > 0 && (
-                                <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6">
+                                <div className="bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6">
                                     <div className="text-center">
                                         <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
                                             <Award className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-yellow-800" />

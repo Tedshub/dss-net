@@ -50,7 +50,7 @@ export default function Dashboard({ criterias = [], alternatives = [] }) {
                                     </div>
                                     <button
                                         onClick={handleManualBookClick}
-                                        className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02]"
+                                        className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02]"
                                     >
                                         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
@@ -161,7 +161,7 @@ export default function Dashboard({ criterias = [], alternatives = [] }) {
                                 {/* Right Sidebar */}
                                 <div className="xl:col-span-1 space-y-4 sm:space-y-6">
                                     {/* Visualization Card */}
-                                    <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white relative overflow-hidden">
+                                    <div className="bg-pink-500 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white relative overflow-hidden">
                                         <div className="relative z-10">
                                             <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Panduan Penggunaan</h3>
                                             <div className="space-y-3 sm:space-y-4">
@@ -208,7 +208,7 @@ export default function Dashboard({ criterias = [], alternatives = [] }) {
                                         <div className="space-y-2 sm:space-y-3">
                                             <Link
                                                 href={route('alternatives.index')}
-                                                className="w-full flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02]"
+                                                className="w-full flex items-center justify-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 bg-purple-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02]"
                                             >
                                                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>

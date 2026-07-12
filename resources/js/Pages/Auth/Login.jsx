@@ -28,7 +28,7 @@ export default function Login({ status, canResetPassword }) {
         <button
             type="button"
             onClick={onClick}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
         >
             {show ? (
                 // Eye Open Icon
@@ -46,173 +46,156 @@ export default function Login({ status, canResetPassword }) {
     );
 
     return (
-        <div className="min-h-screen relative overflow-hidden">
+        <div className="min-h-screen flex bg-white text-black font-sans">
             <Head title="Masuk - Sistem Pendukung Keputusan RKS" />
 
-            {/* Background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600">
-                {/* Decorative elements */}
-                <div className="absolute top-20 left-20 w-32 h-32 bg-purple-400 rounded-full opacity-20 blur-xl"></div>
-                <div className="absolute top-40 right-32 w-48 h-48 bg-pink-400 rounded-full opacity-15 blur-2xl"></div>
-                <div className="absolute bottom-32 left-32 w-40 h-40 bg-purple-300 rounded-full opacity-10 blur-xl"></div>
-                <div className="absolute bottom-20 right-20 w-24 h-24 bg-pink-300 rounded-full opacity-25 blur-lg"></div>
-
-                {/* Dot pattern overlay */}
-                <div className="absolute inset-0" style={{
-                    backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                    backgroundSize: '20px 20px'
-                }}></div>
+            {/* Left side: Background from Landing Page */}
+            <div 
+                className="hidden lg:flex lg:w-1/2 bg-cover bg-center bg-no-repeat relative items-center justify-center animate-fade-in"
+                style={{
+                    backgroundImage: "url('/assets/images/home-bg-2.jpg')",
+                }}
+            >
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="relative z-10 p-12 text-white max-w-2xl text-center">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)] mb-6 bg-blue-400/10 backdrop-blur-sm p-6 rounded-2xl leading-tight shadow-lg border border-white/20 inline-block animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        RKS adalah cara terbaik untuk membuat keputusan cerdas!
+                    </h1>
+                </div>
             </div>
 
-            {/* Navigation */}
-            <nav className="relative z-10 flex items-center justify-between px-8 py-6">
-                <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                        <div className="w-5 h-5 bg-gradient-to-br from-purple-600 to-pink-600 rounded"></div>
+            {/* Right side: Login Form */}
+            <div className="w-full lg:w-1/2 flex flex-col px-6 py-6 sm:px-12 md:px-20 relative animate-fade-in-right" style={{ animationDelay: '0.1s' }}>
+                {/* Navigation */}
+                <nav className="flex justify-between items-center w-full mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                    <div className="flex items-center">
+                        <img
+                            src="/assets/images/dss.png"
+                            alt="RKS Logo"
+                            className="h-8 sm:h-10 w-auto"
+                        />
                     </div>
-                    <span className="text-white text-xl font-bold">RKS</span>
-                </div>
+                    <Link href="/" className="text-gray-500 hover:text-pink-600 transition-colors font-medium text-sm">
+                        Kembali ke Beranda
+                    </Link>
+                </nav>
 
-                <div className="hidden md:flex items-center space-x-8 text-white text-sm">
-                    <Link href="/" className="hover:text-purple-200 transition-colors">Beranda</Link>
-                </div>
-            </nav>
+                <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+                    <div className="text-left mb-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Masuk</h1>
+                        <p className="text-gray-500 text-sm">
+                            Selamat datang kembali! Silakan masukkan detail akun Anda.
+                        </p>
+                    </div>
 
-            {/* Main content */}
-            <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-100px)] px-4">
-                <div className="w-full max-w-md">
-                    {/* Login card */}
-                    <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-2xl">
-                        <div className="text-center mb-8">
-                            <h1 className="text-3xl font-bold text-white mb-2">Selamat Datang</h1>
-                            <p className="text-white/80 text-sm">
-                                Masuk untuk mengakses Sistem Pendukung Keputusan RKS
-                            </p>
+                    {status && (
+                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in">
+                            <div className="text-sm font-medium text-green-600">
+                                {status}
+                            </div>
+                        </div>
+                    )}
+
+                    <form onSubmit={submit} className="space-y-5 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                        <div>
+                            <InputLabel
+                                htmlFor="email"
+                                value="Email"
+                                className="text-gray-700 font-medium mb-1.5"
+                            />
+                            <TextInput
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-1 focus:ring-pink-500 transition-all shadow-sm"
+                                autoComplete="username"
+                                isFocused={true}
+                                placeholder="Masukkan alamat email Anda"
+                                onChange={(e) => setData('email', e.target.value)}
+                            />
+                            <InputError message={errors.email} className="mt-2 text-red-500" />
                         </div>
 
-                        {status && (
-                            <div className="mb-6 p-4 bg-green-500/20 border border-green-400/30 rounded-lg">
-                                <div className="text-sm font-medium text-green-200">
-                                    {status}
-                                </div>
-                            </div>
-                        )}
-
-                        <form onSubmit={submit} className="space-y-6">
-                            <div>
-                                <InputLabel
-                                    htmlFor="email"
-                                    value="Email"
-                                    className="text-white/90 font-medium mb-2"
-                                />
+                        <div>
+                            <InputLabel
+                                htmlFor="password"
+                                value="Kata Sandi"
+                                className="text-gray-700 font-medium mb-1.5"
+                            />
+                            <div className="relative">
                                 <TextInput
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    value={data.email}
-                                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:bg-white/20 focus:border-white/40 focus:ring-2 focus:ring-purple-400/50 transition-all"
-                                    autoComplete="username"
-                                    isFocused={true}
-                                    placeholder="Masukkan alamat email Anda"
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={data.password}
+                                    className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-1 focus:ring-pink-500 transition-all shadow-sm"
+                                    autoComplete="current-password"
+                                    placeholder="Masukkan kata sandi Anda"
+                                    onChange={(e) => setData('password', e.target.value)}
                                 />
-                                <InputError message={errors.email} className="mt-2 text-red-300" />
-                            </div>
-
-                            <div>
-                                <InputLabel
-                                    htmlFor="password"
-                                    value="Kata Sandi"
-                                    className="text-white/90 font-medium mb-2"
+                                <EyeIcon
+                                    show={showPassword}
+                                    onClick={() => setShowPassword(!showPassword)}
                                 />
-                                <div className="relative">
-                                    <TextInput
-                                        id="password"
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={data.password}
-                                        className="w-full px-4 py-3 pr-12 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:bg-white/20 focus:border-white/40 focus:ring-2 focus:ring-purple-400/50 transition-all"
-                                        autoComplete="current-password"
-                                        placeholder="Masukkan kata sandi Anda"
-                                        onChange={(e) => setData('password', e.target.value)}
-                                    />
-                                    <EyeIcon
-                                        show={showPassword}
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    />
-                                </div>
-                                <InputError message={errors.password} className="mt-2 text-red-300" />
                             </div>
+                            <InputError message={errors.password} className="mt-2 text-red-500" />
+                        </div>
 
-                            <div className="flex items-center justify-between">
-                                <label className="flex items-center">
-                                    <Checkbox
-                                        name="remember"
-                                        checked={data.remember}
-                                        className="rounded border-white/30 bg-white/10 text-purple-400 focus:ring-purple-400/50"
-                                        onChange={(e) => setData('remember', e.target.checked)}
-                                    />
-                                    <span className="ml-3 text-sm text-white/80">
-                                        Ingat saya
-                                    </span>
-                                </label>
+                        <div className="flex items-center justify-between mt-4">
+                            <label className="flex items-center">
+                                <Checkbox
+                                    name="remember"
+                                    checked={data.remember}
+                                    className="rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                                    onChange={(e) => setData('remember', e.target.checked)}
+                                />
+                                <span className="ml-2 text-sm text-gray-600">
+                                    Ingat saya
+                                </span>
+                            </label>
 
-                                {canResetPassword && (
-                                    <Link
-                                        href={route('password.request')}
-                                        className="text-sm text-white/80 hover:text-white underline transition-colors"
-                                    >
-                                        Lupa kata sandi?
-                                    </Link>
-                                )}
-                            </div>
+                            {canResetPassword && (
+                                <Link
+                                    href={route('password.request')}
+                                    className="text-sm text-pink-600 hover:text-pink-700 font-medium transition-colors"
+                                >
+                                    Lupa kata sandi?
+                                </Link>
+                            )}
+                        </div>
 
+                        <div className="pt-2">
                             <PrimaryButton
-                                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full bg-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-300 flex justify-center items-center disabled:opacity-70"
                                 disabled={processing}
                             >
                                 {processing ? (
                                     <div className="flex items-center justify-center">
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                                        Sedang masuk...
+                                        Memproses...
                                     </div>
                                 ) : (
                                     'Masuk'
                                 )}
                             </PrimaryButton>
-                        </form>
-
-                        <div className="mt-8 text-center">
-                            <p className="text-white/60 text-sm">
-                                Belum punya akun?{' '}
-                                <Link href="/register" className="text-white hover:text-purple-200 underline transition-colors">
-                                    Daftar di sini
-                                </Link>
-                            </p>
                         </div>
-                    </div>
+                    </form>
 
-                    {/* Additional info */}
-                    <div className="mt-8 text-center">
-                        <p className="text-white/60 text-xs">
-                            Sistem Pendukung Keputusan RKS - Memberdayakan Keputusan Cerdas
+                    <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                        <p className="text-gray-500 text-sm">
+                            Belum punya akun?{' '}
+                            <Link href={route('register')} className="text-pink-600 hover:text-pink-700 font-semibold transition-colors">
+                                Daftar di sini
+                            </Link>
                         </p>
                     </div>
                 </div>
-            </div>
-
-            {/* Decorative illustration - similar to landing page style */}
-            <div className="absolute bottom-0 right-0 w-1/3 h-1/2 opacity-30">
-                <div className="relative w-full h-full">
-                    {/* Abstract shapes representing data/analytics */}
-                    <div className="absolute bottom-10 right-10 w-20 h-20 bg-white/20 rounded-lg transform rotate-12"></div>
-                    <div className="absolute bottom-20 right-20 w-16 h-16 bg-white/15 rounded-lg transform -rotate-6"></div>
-                    <div className="absolute bottom-32 right-16 w-12 h-12 bg-white/10 rounded-lg transform rotate-45"></div>
-
-                    {/* Data visualization elements */}
-                    <div className="absolute bottom-16 right-32 w-8 h-24 bg-white/20 rounded-t-lg"></div>
-                    <div className="absolute bottom-16 right-40 w-8 h-16 bg-white/15 rounded-t-lg"></div>
-                    <div className="absolute bottom-16 right-48 w-8 h-20 bg-white/10 rounded-t-lg"></div>
+                
+                <div className="mt-auto pt-8 text-center animate-fade-in" style={{ animationDelay: '0.7s' }}>
+                    <p className="text-gray-400 text-xs">
+                        &copy; 2026 Sistem Pendukung Keputusan RKS
+                    </p>
                 </div>
             </div>
         </div>

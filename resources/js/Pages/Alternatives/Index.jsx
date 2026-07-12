@@ -241,7 +241,7 @@ export default function Index({ alternatives, flash }) {
                                 <div className="flex-shrink-0">
                                     <button
                                         onClick={handleAddAlternative}
-                                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
                                     >
                                         <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
@@ -249,6 +249,91 @@ export default function Index({ alternatives, flash }) {
                                         <span className="hidden sm:inline">TAMBAHKAN OPSI</span>
                                         <span className="sm:hidden">TAMBAH</span>
                                     </button>
+                                </div>
+                            </div>
+
+                                                        {/* Information Cards */}
+                            <div className="mt-4 sm:mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                                {/* Distribusi Status */}
+                                <div className="bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white">
+                                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Status Pengisian Penilaian</h3>
+                                    <div className="space-y-2 sm:space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-300 rounded-full flex-shrink-0"></div>
+                                                <span className="text-xs sm:text-sm">Penilaian Terjawab</span>
+                                            </div>
+                                            <span className="text-xs sm:text-sm font-semibold">{completedAlternatives} opsi</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-amber-300 rounded-full flex-shrink-0"></div>
+                                                <span className="text-xs sm:text-sm">Belum Terjawab</span>
+                                            </div>
+                                            <span className="text-xs sm:text-sm font-semibold">{incompleteAlternatives} opsi</span>
+                                        </div>
+                                        <div className="pt-2 border-t border-white border-opacity-20">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs sm:text-sm">Persentase Selesai</span>
+                                                <span className="text-xs sm:text-sm font-semibold">
+                                                    {alternatives.length > 0
+                                                        ? Math.round((completedAlternatives / alternatives.length) * 100)
+                                                        : 0}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Informasi Tambahan */}
+                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Statistik Opsi Kebijakan</h3>
+                                    <div className="space-y-2 sm:space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                                <span className="text-xs sm:text-sm text-gray-600">Total Opsi</span>
+                                            </div>
+                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">
+                                                {alternatives.length}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full flex-shrink-0"></div>
+                                                <span className="text-xs sm:text-sm text-gray-600">Rata-rata Panjang Nama</span>
+                                            </div>
+                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">
+                                                {alternatives.length > 0
+                                                    ? (alternatives.reduce((sum, a) => sum + a.name.length, 0) / alternatives.length).toFixed(1)
+                                                    : 0
+                                                } karakter
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
+                                                <span className="text-xs sm:text-sm text-gray-600">Variasi Awalan Kode</span>
+                                            </div>
+                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">
+                                                {Object.keys(alternativesByLetter).length} jenis
+                                            </span>
+                                        </div>
+
+                                        {searchTerm && (
+                                            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-500 rounded-full flex-shrink-0"></div>
+                                                    <span className="text-xs sm:text-sm text-gray-600">Hasil Pencarian</span>
+                                                </div>
+                                                <span className="text-xs sm:text-sm font-semibold text-gray-900">
+                                                    {filteredAlternatives.length} opsi
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -470,91 +555,6 @@ export default function Index({ alternatives, flash }) {
                                                 {alternatives.length} opsi
                                             </span>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Information Cards */}
-                            <div className="mt-4 sm:mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                                {/* Distribusi Status */}
-                                <div className="bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg sm:rounded-xl p-4 sm:p-6 text-white">
-                                    <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Status Pengisian Penilaian</h3>
-                                    <div className="space-y-2 sm:space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-300 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm">Penilaian Terjawab</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold">{completedAlternatives} opsi</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-amber-300 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm">Belum Terjawab</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold">{incompleteAlternatives} opsi</span>
-                                        </div>
-                                        <div className="pt-2 border-t border-white border-opacity-20">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs sm:text-sm">Persentase Selesai</span>
-                                                <span className="text-xs sm:text-sm font-semibold">
-                                                    {alternatives.length > 0
-                                                        ? Math.round((completedAlternatives / alternatives.length) * 100)
-                                                        : 0}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Informasi Tambahan */}
-                                <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Statistik Opsi Kebijakan</h3>
-                                    <div className="space-y-2 sm:space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm text-gray-600">Total Opsi</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">
-                                                {alternatives.length}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm text-gray-600">Rata-rata Panjang Nama</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">
-                                                {alternatives.length > 0
-                                                    ? (alternatives.reduce((sum, a) => sum + a.name.length, 0) / alternatives.length).toFixed(1)
-                                                    : 0
-                                                } karakter
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
-                                                <span className="text-xs sm:text-sm text-gray-600">Variasi Awalan Kode</span>
-                                            </div>
-                                            <span className="text-xs sm:text-sm font-semibold text-gray-900">
-                                                {Object.keys(alternativesByLetter).length} jenis
-                                            </span>
-                                        </div>
-
-                                        {searchTerm && (
-                                            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                                                <div className="flex items-center space-x-2">
-                                                    <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-500 rounded-full flex-shrink-0"></div>
-                                                    <span className="text-xs sm:text-sm text-gray-600">Hasil Pencarian</span>
-                                                </div>
-                                                <span className="text-xs sm:text-sm font-semibold text-gray-900">
-                                                    {filteredAlternatives.length} opsi
-                                                </span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>

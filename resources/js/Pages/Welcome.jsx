@@ -1,6 +1,34 @@
 import { Head, Link } from "@inertiajs/react";
+import { useEffect, useRef, useState } from 'react';
+
+function useInView() {
+    const ref = useRef(null);
+    const [inView, setInView] = useState(false);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setInView(true);
+                if (ref.current) observer.unobserve(ref.current);
+            }
+        }, { threshold: 0.15 });
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
+    return [ref, inView];
+}
 
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
+    const [featuresTitleRef, featuresTitleInView] = useInView();
+    const [card1Ref, card1InView] = useInView();
+    const [card2Ref, card2InView] = useInView();
+    const [card3Ref, card3InView] = useInView();
+
     const handleImageError = () => {
         document
             .getElementById("screenshot-container")
@@ -25,7 +53,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         }}
                     >
                         {/* Navigation */}
-                        <nav className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-20 py-4 flex items-center justify-between">
+                        <nav className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-20 py-4 flex items-center justify-between animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                             {/* Logo */}
                             <div className="flex items-center space-x-2">
                                 <img
@@ -61,7 +89,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         </Link>
                                         <Link
                                             href={route("register")}
-                                            className="bg-gradient-to-r from-pink-500 to-purple-700 px-3 sm:px-6 py-1.5 sm:py-2 rounded-full text-white shadow-lg hover:opacity-90 transition-all text-sm sm:text-base"
+                                            className="bg-pink-500 px-3 sm:px-6 py-1.5 sm:py-2 rounded-full text-white shadow-lg hover:opacity-90 transition-all text-sm sm:text-base"
                                         >
                                             Daftar
                                         </Link>
@@ -75,12 +103,12 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
                                 {/* Left Content */}
                                 <div className="space-y-4 sm:space-y-6 md:space-y-8">
-                                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-white/40 backdrop-blur-sm p-4 sm:p-6 rounded-2xl">
+                                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-white/40 backdrop-blur-sm p-4 sm:p-6 rounded-2xl animate-fade-in-left" style={{ animationDelay: '0.2s' }}>
                                         RKS adalah cara terbaik untuk membuat
                                         keputusan cerdas untuk sekolah Anda!
                                     </h1>
 
-                                    <p className="text-base sm:text-lg md:text-xl text-black leading-relaxed max-w-lg bg-white/40 backdrop-blur-sm p-4 sm:p-6 rounded-2xl">
+                                    <p className="text-base sm:text-lg md:text-xl text-black leading-relaxed max-w-lg bg-white/40 backdrop-blur-sm p-4 sm:p-6 rounded-2xl animate-fade-in-left" style={{ animationDelay: '0.4s' }}>
                                         Sistem Pendukung Keputusan RKS dirancang
                                         untuk mengelola Rencana Kerja Sekolah,
                                         menganalisis pola data, dan mendukung
@@ -88,7 +116,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         wawasan cerdas.
                                     </p>
 
-                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-left" style={{ animationDelay: '0.6s' }}>
                                         {auth.user ? (
                                             <Link
                                                 href={route("dashboard")}
@@ -99,7 +127,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         ) : (
                                             <Link
                                                 href={route("register")}
-                                                className="bg-gradient-to-r from-pink-500 to-purple-600 px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:shadow-2xl hover:shadow-pink-500/25 transition-all duration-300 text-center text-sm sm:text-base"
+                                                className="bg-pink-500 px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold hover:shadow-2xl hover:shadow-pink-500/25 transition-all duration-300 text-center text-sm sm:text-base"
                                             >
                                                 Mulai Sekarang
                                             </Link>
@@ -115,7 +143,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         className="feature-area shadow-xl min-h-[400px] sm:min-h-[500px] md:min-h-[600px]"
                         style={{
                             backgroundImage:
-                                "url('/assets/images/feature-bg-3.png')",
+                                "url('/assets/images/feature-bg-3.png.')",
                             backgroundSize: "contain",
                             backgroundPosition: "right",
                             backgroundRepeat: "no-repeat",
@@ -123,13 +151,20 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         }}
                     >
                         <div className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-20 py-10 sm:py-16 md:py-20">
-                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black text-center mb-8 sm:mb-12 md:mb-16 drop-shadow-lg">
+                            <h2 
+                                ref={featuresTitleRef}
+                                className={`text-2xl sm:text-3xl md:text-4xl font-bold text-black text-center mb-8 sm:mb-12 md:mb-16 drop-shadow-lg ${featuresTitleInView ? 'animate-fade-in-up' : 'opacity-0'}`}
+                            >
                                 Fitur Unggulan RKS
                             </h2>
 
                             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                                 {/* Data Analytics */}
-                                <div className="bg-white/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/40 shadow-lg hover:scale-105 hover:bg-white/40 transition-all duration-300">
+                                <div 
+                                    ref={card1Ref}
+                                    className={`bg-white/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/40 shadow-lg hover:scale-105 hover:bg-white/40 transition-all duration-300 ${card1InView ? 'animate-fade-in-up' : 'opacity-0'}`} 
+                                    style={{ animationDelay: '0.2s' }}
+                                >
                                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mb-4 sm:mb-6 shadow-md">
                                         <svg
                                             className="w-6 h-6 sm:w-8 sm:h-8 text-black"
@@ -158,7 +193,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 </div>
 
                                 {/* Decision Matrix */}
-                                <div className="bg-white/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/40 shadow-lg hover:scale-105 hover:bg-white/40 transition-all duration-300">
+                                <div 
+                                    ref={card2Ref}
+                                    className={`bg-white/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/40 shadow-lg hover:scale-105 hover:bg-white/40 transition-all duration-300 ${card2InView ? 'animate-fade-in-up' : 'opacity-0'}`} 
+                                    style={{ animationDelay: '0.4s' }}
+                                >
                                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-400 to-teal-500 rounded-xl flex items-center justify-center mb-4 sm:mb-6 shadow-md">
                                         <svg
                                             className="w-6 h-6 sm:w-8 sm:h-8 text-black"
@@ -187,7 +226,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 </div>
 
                                 {/* TOPSIS Method */}
-                                <div className="bg-white/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/40 shadow-lg hover:scale-105 hover:bg-white/40 transition-all duration-300 sm:col-span-2 lg:col-span-1">
+                                <div 
+                                    ref={card3Ref}
+                                    className={`bg-white/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/40 shadow-lg hover:scale-105 hover:bg-white/40 transition-all duration-300 sm:col-span-2 lg:col-span-1 ${card3InView ? 'animate-fade-in-up' : 'opacity-0'}`} 
+                                    style={{ animationDelay: '0.6s' }}
+                                >
                                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-pink-400 to-red-500 rounded-xl flex items-center justify-center mb-4 sm:mb-6 shadow-md">
                                         <svg
                                             className="w-6 h-6 sm:w-8 sm:h-8 text-black"
