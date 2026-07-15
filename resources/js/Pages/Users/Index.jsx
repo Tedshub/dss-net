@@ -1,17 +1,20 @@
-import { Head, Link, router } from "@inertiajs/react";
-import { ArrowLeft, Plus, Pencil, Trash2, Search, User } from "lucide-react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
+import { ArrowLeft, Plus, Pencil, Trash2, Search, User, Eye } from "lucide-react";
 
 export default function UserIndex({ users }) {
+    const { auth } = usePage().props;
+    const isAdmin = auth.user.role === 'admin';
+
     // Fungsi untuk menghapus user
     const handleDelete = (id, name) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus user ${name}?`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus ${isAdmin ? 'Sekolah' : 'Komite'} ${name}?`)) {
             router.delete(route("users.destroy", id));
         }
     };
 
     return (
         <>
-            <Head title="Manajemen User" />
+            <Head title={isAdmin ? "Daftar Sekolah" : "Manajemen Komite"} />
 
             <div className="min-h-screen bg-gray-50">
                 {/* Header Section */}
@@ -30,18 +33,20 @@ export default function UserIndex({ users }) {
                 
                                 <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                                     <User className="h-5 w-5 text-purple-600" />
-                                    Daftar Pengguna
+                                    {isAdmin ? "Daftar Sekolah (Kepala Sekolah)" : "Daftar Komite"}
                                 </h1>
                             </div>
                 
                             {/* Bagian Kanan: Tombol Add User */}
-                            <Link
-                                href={route("users.create")}
-                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors duration-200 shadow-sm"
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Tambah User
-                            </Link>
+                            {!isAdmin && (
+                                <Link
+                                    href={route("users.create")}
+                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors duration-200 shadow-sm"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Tambah Komite
+                                </Link>
+                            )}
                             
                         </div>
                     </div>
@@ -57,7 +62,7 @@ export default function UserIndex({ users }) {
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        placeholder="Cari user..."
+                                        placeholder={`Cari ${isAdmin ? 'sekolah' : 'komite'}...`}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-purple-500 focus:border-purple-500"
                                     />
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -73,8 +78,16 @@ export default function UserIndex({ users }) {
                                                 scope="col"
                                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                             >
-                                                Nama
+                                                Nama Lengkap
                                             </th>
+                                            {isAdmin && (
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                                >
+                                                    Nama Sekolah
+                                                </th>
+                                            )}
                                             <th
                                                 scope="col"
                                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -86,12 +99,6 @@ export default function UserIndex({ users }) {
                                                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                             >
                                                 Role
-                                            </th>
-                                            <th
-                                                scope="col"
-                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                            >
-                                                Tanggal Bergabung
                                             </th>
                                             <th
                                                 scope="col"
@@ -122,25 +129,34 @@ export default function UserIndex({ users }) {
                                                             </div>
                                                         </div>
                                                     </td>
+                                                    {isAdmin && (
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="text-sm text-gray-900 font-medium">
+                                                                {user.school_name || "-"}
+                                                            </div>
+                                                        </td>
+                                                    )}
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-500">
                                                             {user.email}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                            {user.role}
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'guest' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                            {user.role === 'guest' ? 'Kepala Sekolah' : 'Komite'}
                                                         </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {new Date(
-                                                            user.created_at,
-                                                        ).toLocaleDateString(
-                                                            "id-ID",
-                                                        )}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                         <div className="flex items-center justify-end space-x-3">
+                                                            {isAdmin && (
+                                                                <Link
+                                                                    href={route("users.show", user.id)}
+                                                                    className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-md hover:bg-blue-100 transition-colors"
+                                                                    title="Lihat Detail Komite"
+                                                                >
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
+                                                            )}
                                                             {/* Tombol Edit */}
                                                             <Link
                                                                 href={route(

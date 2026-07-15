@@ -17,6 +17,9 @@ class OTPController extends Controller
         // ✅ CEK: Jika email sudah verified, langsung ke dashboard
         if ($user->email_verified_at) {
             session(['otp_verified' => true]);
+            if ($user->role === 'sub_guest') {
+                return redirect()->route('alternatives.index')->with('success', 'Email Anda sudah terverifikasi!');
+            }
             return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi!');
         }
         // generate OTP random 6 digit
@@ -44,9 +47,12 @@ class OTPController extends Controller
     {
         $user = $request->user();
 
-        // ✅ CEK: Jika email sudah verified, langsung ke dashboard
+        // ✅ CEK KEDUA: Jika sudah verified, skip form ini
         if ($user->email_verified_at) {
             session(['otp_verified' => true]);
+            if ($user->role === 'sub_guest') {
+                return redirect()->route('alternatives.index')->with('success', 'Email Anda sudah terverifikasi!');
+            }
             return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi!');
         }
 
@@ -113,6 +119,9 @@ class OTPController extends Controller
         \Log::info('OTP Verified Successfully - Redirecting to dashboard');
 
         // REDIRECT KE DASHBOARD (tanpa back())
+        if ($user->role === 'sub_guest') {
+            return redirect()->route('alternatives.index');
+        }
         return redirect()->route('dashboard');
     }
 

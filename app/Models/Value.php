@@ -9,8 +9,14 @@ class Value extends Model
     protected $fillable = [
         'alternative_id',
         'criteria_id',
+        'user_id',
         'value',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function alternative()
     {

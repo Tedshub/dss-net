@@ -624,17 +624,17 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                             <table className="w-full">
                                                 <thead className="bg-gray-50 border-b border-gray-200">
                                                     <tr>
-                                                        <th className="px-3 sm:px-4 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 border-r border-gray-200 min-w-[120px] max-w-[160px]">
+                                                        <th className="px-2 sm:px-3 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 border-r border-gray-200 min-w-[80px] max-w-[120px]">
                                                             OPSI KEBIJAKAN
                                                         </th>
                                                         {criterias.map((criteria) => (
-                                                            <th key={criteria.id} className="px-2 sm:px-3 py-3 sm:py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 min-w-[80px] max-w-[120px]">
+                                                            <th key={criteria.id} className="px-1 sm:px-2 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 min-w-[60px] max-w-[90px]">
                                                                 <div className="space-y-1">
                                                                     <div className="font-bold">{criteria.code}</div>
-                                                                    <div className="font-normal text-gray-400 text-xs max-w-[100px] mx-auto leading-tight truncate">
+                                                                    <div className="font-normal text-gray-400 text-[10px] max-w-[80px] mx-auto leading-tight truncate" title={criteria.name}>
                                                                         {criteria.name}
                                                                     </div>
-                                                                    <div className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-semibold ${
+                                                                    <div className={`inline-flex px-1 py-0.5 rounded-full text-[9px] font-semibold ${
                                                                         criteria.type === 'cost'
                                                                             ? 'bg-red-100 text-red-700'
                                                                             : 'bg-green-100 text-green-700'
@@ -644,7 +644,7 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                                                 </div>
                                                             </th>
                                                         ))}
-                                                        <th className="px-2 sm:px-3 py-3 sm:py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">
+                                                        <th className="px-1 sm:px-2 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[50px]">
                                                             AKSI
                                                         </th>
                                                     </tr>
@@ -679,9 +679,9 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                                     ) : (
                                                         filteredMatrix.map((row, rowIndex) => (
                                                             <tr key={row.alternative.id} className="hover:bg-gray-50 transition-colors">
-                                                                <td className="px-3 sm:px-4 py-3 sm:py-4 sticky left-0 bg-white border-r border-gray-200">
-                                                                    <div className="space-y-1">
-                                                                        <div className="font-medium text-gray-900 text-sm">
+                                                                <td className="px-2 sm:px-3 py-2 sm:py-3 sticky left-0 bg-white border-r border-gray-200">
+                                                                    <div className="space-y-0.5">
+                                                                        <div className="font-medium text-gray-900 text-xs sm:text-sm">
                                                                             {searchTerm ? (
                                                                                 <span dangerouslySetInnerHTML={{
                                                                                     __html: row.alternative.code.replace(
@@ -693,7 +693,7 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                                                                 row.alternative.code
                                                                             )}
                                                                         </div>
-                                                                        <div className="text-xs sm:text-sm text-gray-600 max-w-[140px] truncate">
+                                                                        <div className="text-[10px] sm:text-xs text-gray-600 max-w-[100px] sm:max-w-[120px] truncate" title={row.alternative.name}>
                                                                             {searchTerm ? (
                                                                                 <span dangerouslySetInnerHTML={{
                                                                                     __html: row.alternative.name.replace(
@@ -708,7 +708,7 @@ export default function Index({ matrix, criterias, alternatives, flash }) {
                                                                     </div>
                                                                 </td>
                                                                 {row.values.map((cell, cellIndex) => (
-                                                                    <td key={`${cell.alternative_id}-${cell.criteria_id}`} className="px-2 sm:px-3 py-3 sm:py-4 text-center border-r border-gray-200">
+                                                                    <td key={`${cell.alternative_id}-${cell.criteria_id}`} className="px-1 sm:px-2 py-2 sm:py-3 text-center border-r border-gray-200">
                                                                         {editingCell === `${cell.alternative_id}-${cell.criteria_id}` ? (
                                                                             <input
                                                                                 type="number"

@@ -454,9 +454,9 @@ export default function Index({ initialData = null }) {
                                                 <table className="w-full">
                                                     <thead className="bg-gray-50">
                                                         <tr>
-                                                            <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[100px] sm:min-w-[150px]">Alternatif</th>
+                                                            <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-medium text-gray-500 uppercase min-w-[60px] sm:min-w-[90px]">Alternatif</th>
                                                             {result?.X?.[0] && Object.keys(result.X[0]).filter(key => !['alternative_id', 'code', 'name'].includes(key)).map(criteriaCode => (
-                                                                <th key={criteriaCode} className="px-2 sm:px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase min-w-[80px] sm:min-w-[120px]">
+                                                                <th key={criteriaCode} className="px-1 py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] font-medium text-gray-500 uppercase min-w-[40px] sm:min-w-[50px]">
                                                                     {criteriaCode}
                                                                 </th>
                                                             ))}
@@ -465,11 +465,11 @@ export default function Index({ initialData = null }) {
                                                     <tbody className="bg-white divide-y divide-gray-200">
                                                         {result?.X?.map(row => (
                                                             <tr key={row.alternative_id} className="hover:bg-gray-50">
-                                                                <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900 max-w-[100px] sm:max-w-[150px] truncate">
+                                                                <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-medium text-gray-900 max-w-[60px] sm:max-w-[90px] truncate">
                                                                     <div title={`${row.code} - ${row.name}`}>{row.code}</div>
                                                                 </td>
                                                                 {Object.entries(row).filter(([key]) => !['alternative_id', 'code', 'name'].includes(key)).map(([key, value]) => (
-                                                                    <td key={key} className="px-2 sm:px-4 py-3 text-center text-xs sm:text-sm text-gray-600">
+                                                                    <td key={key} className="px-1 py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] text-gray-600">
                                                                         {value !== null ? parseFloat(value).toFixed(2) : '-'}
                                                                     </td>
                                                                 ))}
@@ -490,9 +490,9 @@ export default function Index({ initialData = null }) {
                                                 <table className="w-full">
                                                     <thead className="bg-gray-50">
                                                         <tr>
-                                                            <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[100px] sm:min-w-[150px]">Alternatif</th>
+                                                            <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-medium text-gray-500 uppercase min-w-[60px] sm:min-w-[90px]">Alternatif</th>
                                                             {result?.R?.[0] && Object.keys(result.R[0]).filter(key => !['alternative_id', 'code', 'name'].includes(key)).map(criteriaCode => (
-                                                                <th key={criteriaCode} className="px-2 sm:px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase min-w-[80px] sm:min-w-[120px]">
+                                                                <th key={criteriaCode} className="px-1 py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] font-medium text-gray-500 uppercase min-w-[40px] sm:min-w-[50px]">
                                                                     {criteriaCode}
                                                                 </th>
                                                             ))}
@@ -501,11 +501,11 @@ export default function Index({ initialData = null }) {
                                                     <tbody className="bg-white divide-y divide-gray-200">
                                                         {result?.R?.map(row => (
                                                             <tr key={row.alternative_id} className="hover:bg-gray-50">
-                                                                <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900 max-w-[100px] sm:max-w-[150px] truncate">
+                                                                <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-medium text-gray-900 max-w-[60px] sm:max-w-[90px] truncate">
                                                                     <div title={`${row.code} - ${row.name}`}>{row.code}</div>
                                                                 </td>
                                                                 {Object.entries(row).filter(([key]) => !['alternative_id', 'code', 'name'].includes(key)).map(([key, value]) => (
-                                                                    <td key={key} className="px-2 sm:px-4 py-3 text-center text-xs sm:text-sm text-gray-600">
+                                                                    <td key={key} className="px-1 py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] text-gray-600">
                                                                         {value !== null ? parseFloat(value).toFixed(4) : '-'}
                                                                     </td>
                                                                 ))}
@@ -526,9 +526,9 @@ export default function Index({ initialData = null }) {
                                                 <table className="w-full">
                                                     <thead className="bg-gray-50">
                                                         <tr>
-                                                            <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[100px] sm:min-w-[150px]">Alternatif</th>
+                                                            <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-medium text-gray-500 uppercase min-w-[60px] sm:min-w-[90px]">Alternatif</th>
                                                             {result?.Y?.[0] && Object.keys(result.Y[0]).filter(key => !['alternative_id', 'code', 'name'].includes(key)).map(criteriaCode => (
-                                                                <th key={criteriaCode} className="px-2 sm:px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase min-w-[80px] sm:min-w-[120px]">
+                                                                <th key={criteriaCode} className="px-1 py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] font-medium text-gray-500 uppercase min-w-[40px] sm:min-w-[50px]">
                                                                     {criteriaCode}
                                                                 </th>
                                                             ))}
@@ -537,11 +537,11 @@ export default function Index({ initialData = null }) {
                                                     <tbody className="bg-white divide-y divide-gray-200">
                                                         {result?.Y?.map(row => (
                                                             <tr key={row.alternative_id} className="hover:bg-gray-50">
-                                                                <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900 max-w-[100px] sm:max-w-[150px] truncate">
+                                                                <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-medium text-gray-900 max-w-[60px] sm:max-w-[90px] truncate">
                                                                     <div title={`${row.code} - ${row.name}`}>{row.code}</div>
                                                                 </td>
                                                                 {Object.entries(row).filter(([key]) => !['alternative_id', 'code', 'name'].includes(key)).map(([key, value]) => (
-                                                                    <td key={key} className="px-2 sm:px-4 py-3 text-center text-xs sm:text-sm text-gray-600">
+                                                                    <td key={key} className="px-1 py-1.5 sm:py-2 text-center text-[9px] sm:text-[10px] text-gray-600">
                                                                         {value !== null ? parseFloat(value).toFixed(4) : '-'}
                                                                     </td>
                                                                 ))}

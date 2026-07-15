@@ -18,13 +18,22 @@ class TopsisController extends Controller
     }
 
     /**
+     * Resolves the owner ID for alternatives (headmaster's ID).
+     */
+    private function resolveOwnerId(): int
+    {
+        $user = Auth::user();
+        return ($user->role === 'sub_guest' && $user->parent_id)
+            ? $user->parent_id
+            : $user->id;
+    }
+
+    /**
      * Endpoint JSON hasil TOPSIS (untuk AJAX calls)
      */
     public function index()
     {
-        $userId = Auth::id();
-        $result = $this->topsis->calculate($userId);
-
+        $result = $this->topsis->calculate($this->resolveOwnerId());
         return response()->json($result);
     }
 
@@ -41,8 +50,7 @@ class TopsisController extends Controller
      */
     public function viewWithData()
     {
-        $userId = Auth::id();
-        $result = $this->topsis->calculate($userId);
+        $result = $this->topsis->calculate($this->resolveOwnerId());
 
         return Inertia::render('Calculation/Index', [
             'initialData' => $result

@@ -76,7 +76,7 @@ export default function AuthenticatedLayout({ header, children }) {
             ),
             route: "dashboard",
             active: route().current("dashboard"),
-            allowedRoles: ["admin", "guest"], // Semua role bisa akses
+            allowedRoles: ["admin", "guest"],
         },
         {
             name: "Kriteria",
@@ -108,9 +108,9 @@ export default function AuthenticatedLayout({ header, children }) {
                     />
                 </svg>
             ),
-            route: "alternatives.index", // Akan menggunakan # sebagai placeholder
+            route: "alternatives.index",
             active: route().current("alternatives.*"),
-            allowedRoles: ["admin", "guest"], // Semua role bisa akses
+            allowedRoles: ["admin", "guest", "sub_guest"],
         },
         {
             name: "Matrix Penilaian",
@@ -142,11 +142,11 @@ export default function AuthenticatedLayout({ header, children }) {
                     />
                 </svg>
             ),
-            route: "calculation.index", // Akan menggunakan # sebagai placeholder
+            route: "calculation.index",
             active:
                 route().current("calculation.index") ||
                 route().current("topsis.view"),
-            allowedRoles: ["admin", "guest"], // Semua role bisa akses
+            allowedRoles: ["admin", "guest"],
         },
     ];
 
@@ -154,6 +154,13 @@ export default function AuthenticatedLayout({ header, children }) {
     const navigationItems = allNavigationItems.filter((item) =>
         item.allowedRoles.includes(user.role),
     );
+
+    const getRoleLabel = (role) => {
+        if (role === 'guest') return 'Kepala Sekolah';
+        if (role === 'sub_guest') return 'Komite';
+        if (role === 'admin') return 'Admin';
+        return role;
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -262,8 +269,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="absolute bottom-4 left-4 right-4">
                         <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded text-center border">
                             Role:{" "}
-                            {user.role.charAt(0).toUpperCase() +
-                                user.role.slice(1)}
+                            {getRoleLabel(user.role)}
                         </div>
                     </div>
                 )}
@@ -322,7 +328,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     {user.name}
                                                 </div>
                                                 <div className="text-xs text-gray-500">
-                                                    {user.role}
+                                                    {getRoleLabel(user.role)}
                                                 </div>
                                             </div>
                                             <svg
@@ -348,9 +354,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <div className="text-sm text-gray-500 truncate">
                                                 {user.email}
                                             </div>
-                                            <div className="text-xs text-gray-400 mt-1">
-                                                Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                                            </div>
                                         </div>
                                     
                                         {/* --- Menu Profile --- */}
@@ -363,14 +366,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                             </div>
                                         </Dropdown.Link>
                                     
-                                        {/* --- Menu User Manage (KHUSUS ADMIN) --- */}
+                                        {/* --- Menu User Manage (KHUSUS ADMIN & GUEST) --- */}
                                         {["admin", "guest"].includes(user.role) && (
                                             <Dropdown.Link href={route("users.index")}>
                                                 <div className="flex items-center space-x-2">
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                                     </svg>
-                                                    <span>Karyawan</span>
+                                                    <span>{user.role === 'admin' ? 'Pengguna' : 'Komite'}</span>
                                                 </div>
                                             </Dropdown.Link>
                                         )}

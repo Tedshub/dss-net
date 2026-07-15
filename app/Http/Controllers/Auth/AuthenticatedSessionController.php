@@ -38,6 +38,11 @@ class AuthenticatedSessionController extends Controller
     // ✅ Jika email sudah verified, set session dan langsung ke dashboard
     if ($user->email_verified_at) {
         session(['otp_verified' => true]);
+        
+        if ($user->role === 'sub_guest') {
+            return redirect()->intended(route('alternatives.index'));
+        }
+        
         return redirect()->intended(route('dashboard'));
     }
 

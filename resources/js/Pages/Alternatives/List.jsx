@@ -116,6 +116,13 @@ export default function AssessmentList({ alternative, criterias }) {
                 { label: 'Permintaan Fasilitas Tambahan standar minimal', value: 4 },
                 { label: 'Tuntutan Kualitas Pengajar Tinggi', value: 3 }
             ]
+        },
+        {
+            id: 11,
+            criteria_code: 'C11',
+            item: 'Masukkan anggaran kegiatan',
+            subtitle: '(Anggaran)',
+            is_input: true // Penanda bahwa ini adalah isian teks, bukan pilihan
         }
     ];
 
@@ -124,6 +131,17 @@ export default function AssessmentList({ alternative, criterias }) {
         answers: {}
     });
 
+    const [anggaranDisplay, setAnggaranDisplay] = useState(''); // State untuk tampilan format rupiah
+
+    // Fungsi format rupiah
+    const formatRupiah = (number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(number);
+    };
+
     const handleOptionChange = (itemId, value) => {
         setData('answers', {
             ...data.answers,
@@ -131,8 +149,31 @@ export default function AssessmentList({ alternative, criterias }) {
         });
     };
 
+    const handleAnggaranChange = (e, itemId) => {
+        // Hanya ambil angka
+        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+        
+        if (rawValue) {
+            const numericValue = parseInt(rawValue, 10);
+            setAnggaranDisplay(formatRupiah(numericValue));
+            handleOptionChange(itemId, numericValue);
+        } else {
+            setAnggaranDisplay('');
+            // Hapus dari answers jika kosong
+            const newAnswers = { ...data.answers };
+            delete newAnswers[itemId];
+            setData('answers', newAnswers);
+        }
+    };
+
     const isAllItemsAnswered = () => {
-        return assessmentItems.every(item => data.answers[item.id] !== undefined);
+        return assessmentItems.every(item => {
+            const answer = data.answers[item.id];
+            if (item.is_input) {
+                return answer !== undefined && answer !== null && answer > 0;
+            }
+            return answer !== undefined;
+        });
     };
 
     const handleSubmit = (e) => {
@@ -208,7 +249,7 @@ export default function AssessmentList({ alternative, criterias }) {
                                         <p className="text-xs sm:text-sm">
                                             Silakan isi item berikut dengan memilih salah satu opsi yang paling sesuai dengan kebijakan yang dimaksud.
                                             <span className="font-semibold block mt-1">
-                                                Progress: {getAnsweredCount()}/10 item terjawab
+                                                Progress: {getAnsweredCount()}/{assessmentItems.length} item terjawab
                                             </span>
                                         </p>
                                     </div>
@@ -240,33 +281,48 @@ export default function AssessmentList({ alternative, criterias }) {
                                             </div>
 
                                             <div className="space-y-3 ml-0 sm:ml-13">
-                                                {item.options.map((option, optIndex) => (
-                                                    <label
-                                                        key={optIndex}
-                                                        className={`flex items-start p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                                            data.answers[item.id] === option.value
-                                                                ? 'border-blue-500 bg-blue-50'
-                                                                : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                                                        }`}
-                                                    >
+                                                {item.is_input ? (
+                                                    <div className="mt-2">
                                                         <input
-                                                            type="radio"
-                                                            name={`item_${item.id}`}
-                                                            value={option.value}
-                                                            checked={data.answers[item.id] === option.value}
-                                                            onChange={() => handleOptionChange(item.id, option.value)}
-                                                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+                                                            type="text"
+                                                            value={anggaranDisplay}
+                                                            onChange={(e) => handleAnggaranChange(e, item.id)}
+                                                            placeholder="Rp 0"
+                                                            className="w-full sm:max-w-md border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-900"
                                                         />
-                                                        <div className="ml-3 flex-1">
-                                                            <span className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                                                {String.fromCharCode(97 + optIndex)}. {option.label}
-                                                            </span>
-                                                            {/* <span className="ml-2 inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
-                                                                Nilai: {option.value}
-                                                            </span> */}
-                                                        </div>
-                                                    </label>
-                                                ))}
+                                                        <p className="text-xs text-amber-600 mt-2 italic flex items-center">
+                                                            <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                                                            </svg>
+                                                            Masukan nominal anggaran hanya berupa angka tanpa huruf dan tanda baca lainnya, format nominal otomatis disesuaikan.
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    item.options.map((option, optIndex) => (
+                                                        <label
+                                                            key={optIndex}
+                                                            className={`flex items-start p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                                                data.answers[item.id] === option.value
+                                                                    ? 'border-blue-500 bg-blue-50'
+                                                                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name={`item_${item.id}`}
+                                                                value={option.value}
+                                                                checked={data.answers[item.id] === option.value}
+                                                                onChange={() => handleOptionChange(item.id, option.value)}
+                                                                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+                                                            />
+                                                            <div className="ml-3 flex-1">
+                                                                <span className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                                                                    {String.fromCharCode(97 + optIndex)}. {option.label}
+                                                                </span>
+                                                            </div>
+                                                        </label>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     ))}

@@ -22,17 +22,28 @@ class AlternativeController extends Controller
 
     public function index()
     {
-        $userId = Auth::id();
+        $user = auth()->user();
+        
+        // Jika sub_guest, ambil alternative dari parent_id-nya (guest)
+        $targetUserId = $user->role === 'sub_guest' ? $user->parent_id : $user->id;
 
-        $alternatives = Alternative::where('user_id', $userId)->get();
+        $alternatives = Alternative::where('user_id', $targetUserId)->get();
 
         // Hitung jumlah total kriteria
         $totalCriterias = \App\Models\Criteria::count();
 
+        // Ambil semua komite yang terdaftar di sekolah yang sama
+        $committees = \App\Models\User::where('parent_id', $targetUserId)
+            ->where('role', 'sub_guest')
+            ->get(['id', 'name', 'email']);
+
+        $totalCommittees = $committees->count();
+
         // Tambahkan status untuk setiap alternative
-        $alternatives = $alternatives->map(function ($alternative) use ($totalCriterias) {
-            // Hitung berapa banyak values yang tidak null
+        $alternatives = $alternatives->map(function ($alternative) use ($totalCriterias, $user, $committees, $totalCommittees) {
+            // Hitung berapa banyak values yang tidak null, milik user yang sedang login
             $filledValuesCount = \App\Models\Value::where('alternative_id', $alternative->id)
+                ->where('user_id', $user->id)
                 ->whereNotNull('value')
                 ->count();
 
@@ -43,6 +54,20 @@ class AlternativeController extends Controller
 
             $alternative->filled_values_count = $filledValuesCount;
             $alternative->total_criterias = $totalCriterias;
+
+            // Hitung komite yang sudah menilai opsi ini (minimal 1 nilai tidak null)
+            $committeeRaters = $committees->filter(function ($committee) use ($alternative) {
+                return \App\Models\Value::where('alternative_id', $alternative->id)
+                    ->where('user_id', $committee->id)
+                    ->whereNotNull('value')
+                    ->exists();
+            })->values()->map(function ($c) {
+                return ['id' => $c->id, 'name' => $c->name, 'email' => $c->email];
+            });
+
+            $alternative->committee_raters       = $committeeRaters;
+            $alternative->committee_rated_count  = $committeeRaters->count();
+            $alternative->committee_total_count  = $totalCommittees;
 
             return $alternative;
         });
@@ -151,7 +176,10 @@ class AlternativeController extends Controller
      */
     private function authorizeAccess(Alternative $alternative)
     {
-        if ($alternative->user_id !== Auth::id()) {
+        $user = auth()->user();
+        $targetUserId = $user->role === 'sub_guest' ? $user->parent_id : $user->id;
+
+        if ($alternative->user_id !== $targetUserId) {
             abort(403, 'Unauthorized action.');
         }
     }
@@ -176,32 +204,34 @@ class AlternativeController extends Controller
      */
     public function storeList(Request $request)
     {
-        $userId = Auth::id();
+        $user = auth()->user();
+        $targetUserId = $user->role === 'sub_guest' ? $user->parent_id : $user->id;
 
         $request->validate([
             'alternative_id' => 'required|exists:alternatives,id',
-            'answers' => 'required|array|min:10',
+            'answers' => 'required|array|min:11',
             'answers.*' => 'required|numeric'
         ]);
 
-        // Pastikan alternative milik user ini
+        // Pastikan alternative milik user ini atau parent-nya
         $alternative = Alternative::where('id', $request->alternative_id)
-            ->where('user_id', $userId)
+            ->where('user_id', $targetUserId)
             ->firstOrFail();
 
-        // Ambil semua kriteria
-        $criterias = \App\Models\Criteria::orderBy('code')->get();
+        // Ambil semua kriteria dan index berdasarkan kodenya
+        $criterias = \App\Models\Criteria::all()->keyBy('code');
 
         // Simpan setiap jawaban ke tabel values
         foreach ($request->answers as $itemId => $value) {
-            // itemId = 1-10, map ke criteria berdasarkan urutan
-            $criteriaIndex = $itemId - 1;
+            // Map itemId (1-11) ke format kode kriteria (C1-C11)
+            $criteriaCode = 'C' . $itemId;
 
-            if (isset($criterias[$criteriaIndex])) {
+            if (isset($criterias[$criteriaCode])) {
                 \App\Models\Value::updateOrCreate(
                     [
                         'alternative_id' => $alternative->id,
-                        'criteria_id' => $criterias[$criteriaIndex]->id,
+                        'criteria_id' => $criterias[$criteriaCode]->id,
+                        'user_id' => $user->id,
                     ],
                     [
                         'value' => $value,

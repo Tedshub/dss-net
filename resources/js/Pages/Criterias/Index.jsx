@@ -7,8 +7,14 @@ export default function Index({ criterias, flash }) {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showBudgetWarningModal, setShowBudgetWarningModal] = useState(false);
+    const [budgetWarningMessage, setBudgetWarningMessage] = useState('');
     const [selectedCriteria, setSelectedCriteria] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+
+    // State mode nama kriteria: 'dropdown' (pilih dari list) atau 'free' (ketik bebas)
+    const [addNameMode, setAddNameMode] = useState('dropdown');
+    const [editNameMode, setEditNameMode] = useState('dropdown');
 
     // Detect mobile screen size - consistent with Values/Index.jsx
     useEffect(() => {
@@ -38,9 +44,57 @@ export default function Index({ criterias, flash }) {
         weight: ''
     });
 
+    // Hitung total bobot semua kriteria yang ada
+    const totalBobot = criterias.reduce((sum, c) => sum + parseFloat(c.weight || 0), 0);
+
+    /**
+     * Validasi apakah bobot kriteria "Anggaran" melebihi 30% dari total bobot keseluruhan.
+     * Total bobot keseluruhan = total bobot semua kriteria + bobot baru yang akan disimpan.
+     * Untuk edit: total bobot = total semua kriteria - bobot lama kriteria yg diedit + bobot baru.
+     */
+    const validateAnggaranBobot = (namaKriteria, bobotBaru, editTarget = null) => {
+        if (namaKriteria !== 'Anggaran') {
+            return { valid: true, message: '' };
+        }
+        const bobot = parseFloat(bobotBaru) || 0;
+        let totalKeseluruhan;
+        if (editTarget) {
+            const bobotLama = parseFloat(editTarget.weight || 0);
+            totalKeseluruhan = totalBobot - bobotLama + bobot;
+        } else {
+            totalKeseluruhan = totalBobot + bobot;
+        }
+        const batas30Persen = totalKeseluruhan * 0.30;
+        if (bobot > batas30Persen) {
+            return {
+                valid: false,
+                message: `Kriteria Anggaran gagal disimpan karena bobot melebihi 30% dari 100% total bobot keseluruhan kriteria.`
+            };
+        }
+        return { valid: true, message: '' };
+    };
+
+    // Buat kode urutan selanjutnya berdasarkan kriteria yang ada
+    // Contoh: jika sudah ada C1..C10, maka kode berikutnya adalah C11
+    const generateNextCode = () => {
+        if (criterias.length === 0) return 'C1';
+        // Ambil semua angka dari kode yang formatnya C{angka}
+        const nums = criterias
+            .map(c => {
+                const match = c.code.match(/^C(\d+)$/i);
+                return match ? parseInt(match[1], 10) : 0;
+            })
+            .filter(n => n > 0);
+        const max = nums.length > 0 ? Math.max(...nums) : criterias.length;
+        return `C${max + 1}`;
+    };
+
     const handleAddCriteria = () => {
         setShowAddModal(true);
+        setAddNameMode('dropdown');
         resetAdd();
+        // Set kode otomatis — dilakukan setelah resetAdd agar tidak ditimpa
+        setTimeout(() => setAddData('code', generateNextCode()), 0);
     };
 
     const handleEditCriteria = (criteria) => {
@@ -51,6 +105,8 @@ export default function Index({ criterias, flash }) {
             type: criteria.type,
             weight: criteria.weight
         });
+        // Jika nama kriteria adalah "Anggaran" gunakan mode dropdown, selain itu mode free
+        setEditNameMode(criteria.name === 'Anggaran' ? 'dropdown' : 'free');
         setShowEditModal(true);
     };
 
@@ -61,6 +117,13 @@ export default function Index({ criterias, flash }) {
 
     const submitAdd = (e) => {
         e.preventDefault();
+        // Validasi bobot Anggaran
+        const validation = validateAnggaranBobot(addData.name, addData.weight, null);
+        if (!validation.valid) {
+            setBudgetWarningMessage(validation.message);
+            setShowBudgetWarningModal(true);
+            return;
+        }
         post(route('criterias.store'), {
             onSuccess: () => {
                 setShowAddModal(false);
@@ -71,6 +134,13 @@ export default function Index({ criterias, flash }) {
 
     const submitEdit = (e) => {
         e.preventDefault();
+        // Validasi bobot Anggaran
+        const validation = validateAnggaranBobot(editData.name, editData.weight, selectedCriteria);
+        if (!validation.valid) {
+            setBudgetWarningMessage(validation.message);
+            setShowBudgetWarningModal(true);
+            return;
+        }
         put(route('criterias.update', selectedCriteria.id), {
             onSuccess: () => {
                 setShowEditModal(false);
@@ -92,6 +162,71 @@ export default function Index({ criterias, flash }) {
     const costCriteria = criterias.filter(c => c.type === 'cost').length;
     const benefitCriteria = criterias.filter(c => c.type === 'benefit').length;
     const averageWeight = totalCriteria > 0 ? (criterias.reduce((sum, c) => sum + parseFloat(c.weight), 0) / totalCriteria).toFixed(1) : 0;
+
+    // Komponen field Nama Kriteria: hybrid dropdown + input teks bebas
+    const NamaKriteriaField = ({ mode, setMode, value, onChange, errors }) => {
+        const isAnggaran = value === 'Anggaran';
+        return (
+            <div>
+                {/* Dropdown pilihan cepat */}
+                <select
+                    value={mode === 'dropdown' ? (isAnggaran ? 'Anggaran' : '') : '__free__'}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'Anggaran') {
+                            setMode('dropdown');
+                            onChange('Anggaran');
+                        } else if (val === '__free__') {
+                            setMode('free');
+                            onChange('');
+                        } else {
+                            setMode('dropdown');
+                            onChange('');
+                        }
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                    <option value="">-- Pilih nama kriteria --</option>
+                    <option value="Anggaran">Anggaran</option>
+                    <option value="__free__">Lainnya (ketik sendiri)</option>
+                </select>
+
+                {/* Hint umum saat belum memilih */}
+                {mode === 'dropdown' && !isAnggaran && (
+                    <p className="text-xs text-gray-400 italic mt-1">Anda dapat memasukan kriteria lain selain anggaran.</p>
+                )}
+
+                {/* Peringatan aturan bobot saat Anggaran dipilih */}
+                {isAnggaran && (
+                    <div className="flex items-start space-x-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+                        <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                        </svg>
+                        <p className="text-xs text-amber-700">
+                            <strong>Aturan Anggaran:</strong> Bobot kriteria Anggaran tidak boleh melebihi <strong>30%</strong> dari total bobot keseluruhan kriteria.
+                        </p>
+                    </div>
+                )}
+
+                {/* Input teks bebas saat mode free */}
+                {mode === 'free' && (
+                    <>
+                        <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2"
+                            placeholder="Nama kriteria"
+                            autoFocus
+                        />
+                        <p className="text-xs text-gray-400 italic mt-1">Anda dapat memasukan kriteria lain selain anggaran.</p>
+                    </>
+                )}
+
+                {errors && <p className="text-red-500 text-xs mt-1">{errors}</p>}
+            </div>
+        );
+    };
 
     // Mobile Card Component for criterias
     const MobileCriteriaCard = ({ criteria, index }) => (
@@ -427,25 +562,29 @@ export default function Index({ criterias, flash }) {
                         <form onSubmit={submitAdd}>
                             <div className="mb-3 sm:mb-4">
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Kode</label>
-                                <input
-                                    type="text"
-                                    value={addData.code}
-                                    onChange={e => setAddData('code', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="Contoh: C1"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={addData.code}
+                                        readOnly
+                                        className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 cursor-not-allowed pr-24"
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 select-none">
+                                        Otomatis
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-400 italic mt-1">Kode dibuat otomatis sesuai urutan kriteria.</p>
                                 {addErrors.code && <p className="text-red-500 text-xs mt-1">{addErrors.code}</p>}
                             </div>
                             <div className="mb-3 sm:mb-4">
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nama Kriteria</label>
-                                <input
-                                    type="text"
+                                <NamaKriteriaField
+                                    mode={addNameMode}
+                                    setMode={setAddNameMode}
                                     value={addData.name}
-                                    onChange={e => setAddData('name', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="Nama kriteria"
+                                    onChange={(val) => setAddData('name', val)}
+                                    errors={addErrors.name}
                                 />
-                                {addErrors.name && <p className="text-red-500 text-xs mt-1">{addErrors.name}</p>}
                             </div>
                             <div className="mb-3 sm:mb-4">
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Tipe</label>
@@ -469,6 +608,87 @@ export default function Index({ criterias, flash }) {
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     placeholder="0"
                                 />
+                                {addData.name === 'Anggaran' && (() => {
+                                    const bobotInput = parseFloat(addData.weight) || 0;
+                                    const totalSim = totalBobot + bobotInput;
+                                    const persen = totalSim > 0 ? (bobotInput / totalSim) * 100 : 0;
+                                    const batas30 = totalSim * 0.30;
+                                    const melebihi = bobotInput > batas30;
+                                    const statusWarna = melebihi ? 'red' : persen >= 25 ? 'amber' : 'green';
+                                    const barColor = melebihi ? 'bg-red-500' : persen >= 25 ? 'bg-amber-400' : 'bg-green-500';
+                                    const bgCard = melebihi ? 'bg-red-50 border-red-200' : persen >= 25 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200';
+                                    const textMain = melebihi ? 'text-red-700' : persen >= 25 ? 'text-amber-700' : 'text-green-700';
+                                    const textSub = melebihi ? 'text-red-500' : persen >= 25 ? 'text-amber-500' : 'text-green-600';
+                                    return (
+                                        <div className={`mt-2 rounded-xl border p-3 ${bgCard}`}>
+                                            {/* Header simulasi */}
+                                            <div className={`flex items-center space-x-1.5 mb-2.5 ${textMain}`}>
+                                                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+                                                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                                                </svg>
+                                                <span className="text-xs font-semibold tracking-wide uppercase">Simulasi Bobot Anggaran</span>
+                                            </div>
+
+                                            {/* Baris data */}
+                                            <div className="space-y-1.5 mb-2.5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-gray-500">Bobot kriteria lain</span>
+                                                    <span className="text-xs font-semibold text-gray-700">{totalBobot > 0 ? totalBobot.toFixed(4) : '0'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-gray-500">Bobot Anggaran (diinput)</span>
+                                                    <span className={`text-xs font-semibold ${textMain}`}>{bobotInput > 0 ? bobotInput.toFixed(4) : '—'}</span>
+                                                </div>
+                                                <div className="border-t border-gray-200 pt-1.5 flex justify-between items-center">
+                                                    <span className="text-xs font-medium text-gray-600">Total bobot keseluruhan</span>
+                                                    <span className="text-xs font-bold text-gray-900">{totalSim > 0 ? totalSim.toFixed(4) : '—'}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Progress bar */}
+                                            <div className="mb-2">
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className={`font-medium ${textMain}`}>
+                                                        {bobotInput > 0 ? `${persen.toFixed(1)}%` : '0%'} dari total
+                                                    </span>
+                                                    <span className="text-gray-400">Batas maks. 30%</span>
+                                                </div>
+                                                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-2 rounded-full transition-all duration-300 ${barColor}`}
+                                                        style={{ width: `${Math.min(persen / 30 * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                                {/* Marker 30% */}
+                                                <div className="relative">
+                                                    <div className="absolute right-0 top-0 w-px h-2 bg-red-400" style={{ right: '0%' }} />
+                                                </div>
+                                            </div>
+
+                                            {/* Status badge */}
+                                            <div className={`flex items-center space-x-1.5 text-xs font-semibold ${textMain}`}>
+                                                {melebihi ? (
+                                                    <>
+                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                        </svg>
+                                                        <span>Melebihi batas 30% — kurangi bobot Anggaran</span>
+                                                    </>
+                                                ) : bobotInput > 0 ? (
+                                                    <>
+                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                                                        </svg>
+                                                        <span>Bobot Anggaran sesuai aturan ✓</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-gray-400 font-normal">Masukkan bobot untuk melihat simulasi...</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                                 {addErrors.weight && <p className="text-red-500 text-xs mt-1">{addErrors.weight}</p>}
                             </div>
                             <div className="flex flex-col-reverse sm:flex-row justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3">
@@ -510,13 +730,13 @@ export default function Index({ criterias, flash }) {
                             </div>
                             <div className="mb-3 sm:mb-4">
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nama Kriteria</label>
-                                <input
-                                    type="text"
+                                <NamaKriteriaField
+                                    mode={editNameMode}
+                                    setMode={setEditNameMode}
                                     value={editData.name}
-                                    onChange={e => setEditData('name', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    onChange={(val) => setEditData('name', val)}
+                                    errors={editErrors.name}
                                 />
-                                {editErrors.name && <p className="text-red-500 text-xs mt-1">{editErrors.name}</p>}
                             </div>
                             <div className="mb-3 sm:mb-4">
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Tipe</label>
@@ -539,6 +759,83 @@ export default function Index({ criterias, flash }) {
                                     onChange={e => setEditData('weight', e.target.value)}
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 />
+                                {editData.name === 'Anggaran' && (() => {
+                                    const bobotLama = parseFloat(selectedCriteria?.weight || 0);
+                                    const bobotLainnya = totalBobot - bobotLama;
+                                    const bobotInput = parseFloat(editData.weight) || 0;
+                                    const totalSim = bobotLainnya + bobotInput;
+                                    const persen = totalSim > 0 ? (bobotInput / totalSim) * 100 : 0;
+                                    const batas30 = totalSim * 0.30;
+                                    const melebihi = bobotInput > batas30;
+                                    const barColor = melebihi ? 'bg-red-500' : persen >= 25 ? 'bg-amber-400' : 'bg-green-500';
+                                    const bgCard = melebihi ? 'bg-red-50 border-red-200' : persen >= 25 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200';
+                                    const textMain = melebihi ? 'text-red-700' : persen >= 25 ? 'text-amber-700' : 'text-green-700';
+                                    return (
+                                        <div className={`mt-2 rounded-xl border p-3 ${bgCard}`}>
+                                            {/* Header simulasi */}
+                                            <div className={`flex items-center space-x-1.5 mb-2.5 ${textMain}`}>
+                                                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+                                                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                                                </svg>
+                                                <span className="text-xs font-semibold tracking-wide uppercase">Simulasi Bobot Anggaran</span>
+                                            </div>
+
+                                            {/* Baris data */}
+                                            <div className="space-y-1.5 mb-2.5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-gray-500">Bobot kriteria lain</span>
+                                                    <span className="text-xs font-semibold text-gray-700">{bobotLainnya > 0 ? bobotLainnya.toFixed(4) : '0'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs text-gray-500">Bobot Anggaran (diinput)</span>
+                                                    <span className={`text-xs font-semibold ${textMain}`}>{bobotInput > 0 ? bobotInput.toFixed(4) : '—'}</span>
+                                                </div>
+                                                <div className="border-t border-gray-200 pt-1.5 flex justify-between items-center">
+                                                    <span className="text-xs font-medium text-gray-600">Total bobot keseluruhan</span>
+                                                    <span className="text-xs font-bold text-gray-900">{totalSim > 0 ? totalSim.toFixed(4) : '—'}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Progress bar */}
+                                            <div className="mb-2">
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className={`font-medium ${textMain}`}>
+                                                        {bobotInput > 0 ? `${persen.toFixed(1)}%` : '0%'} dari total
+                                                    </span>
+                                                    <span className="text-gray-400">Batas maks. 30%</span>
+                                                </div>
+                                                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-2 rounded-full transition-all duration-300 ${barColor}`}
+                                                        style={{ width: `${Math.min(persen / 30 * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Status badge */}
+                                            <div className={`flex items-center space-x-1.5 text-xs font-semibold ${textMain}`}>
+                                                {melebihi ? (
+                                                    <>
+                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                        </svg>
+                                                        <span>Melebihi batas 30% — kurangi bobot Anggaran</span>
+                                                    </>
+                                                ) : bobotInput > 0 ? (
+                                                    <>
+                                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                                                        </svg>
+                                                        <span>Bobot Anggaran sesuai aturan ✓</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-gray-400 font-normal">Masukkan bobot untuk melihat simulasi...</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                                 {editErrors.weight && <p className="text-red-500 text-xs mt-1">{editErrors.weight}</p>}
                             </div>
                             <div className="flex flex-col-reverse sm:flex-row justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3">
@@ -584,6 +881,37 @@ export default function Index({ criterias, flash }) {
                                 Hapus
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Peringatan Bobot Anggaran Melebihi 30% */}
+            {showBudgetWarningModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-3 sm:p-4">
+                    <div className="bg-white rounded-xl p-5 sm:p-7 w-full max-w-sm mx-auto shadow-2xl">
+                        {/* Ikon peringatan */}
+                        <div className="flex items-center justify-center mb-4">
+                            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+                                <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                        {/* Judul */}
+                        <h3 className="text-center text-base sm:text-lg font-bold text-gray-900 mb-2">
+                            Gagal Menyimpan Kriteria
+                        </h3>
+                        {/* Pesan */}
+                        <p className="text-center text-sm text-gray-600 leading-relaxed mb-5">
+                            {budgetWarningMessage}
+                        </p>
+                        {/* Tombol tutup */}
+                        <button
+                            onClick={() => setShowBudgetWarningModal(false)}
+                            className="w-full px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                        >
+                            Mengerti
+                        </button>
                     </div>
                 </div>
             )}

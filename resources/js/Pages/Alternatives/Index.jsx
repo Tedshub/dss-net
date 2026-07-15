@@ -3,13 +3,16 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
 
-export default function Index({ alternatives, flash }) {
+export default function Index({ auth, alternatives, flash }) {
+    const canManage = auth.user.role === 'admin' || auth.user.role === 'guest';
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedAlternative, setSelectedAlternative] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isMobile, setIsMobile] = useState(false);
+    const [showCommitteeModal, setShowCommitteeModal] = useState(false);
+    const [committeeModalData, setCommitteeModalData] = useState({ alternative: null, raters: [], total: 0 });
 
     // Detect mobile screen size
     useEffect(() => {
@@ -146,6 +149,41 @@ export default function Index({ alternatives, flash }) {
         }
     };
 
+    // Open committee modal
+    const handleShowCommitteeDetail = (alternative) => {
+        setCommitteeModalData({
+            alternative,
+            raters: alternative.committee_raters || [],
+            total: alternative.committee_total_count || 0,
+        });
+        setShowCommitteeModal(true);
+    };
+
+    // Render committee rating badge
+    const renderCommitteeBadge = (alternative) => {
+        const rated  = alternative.committee_rated_count ?? 0;
+        const total  = alternative.committee_total_count ?? 0;
+        const allDone = total > 0 && rated === total;
+        return (
+            <button
+                onClick={() => handleShowCommitteeDetail(alternative)}
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold transition-colors ${
+                    allDone
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : rated > 0
+                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+                title="Klik untuk melihat detail komite yang sudah menilai"
+            >
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                {rated} / {total} menilai
+            </button>
+        );
+    };
+
     // Mobile Card Component
     const MobileAlternativeCard = ({ alternative, index }) => (
         <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 space-y-3 mb-3 sm:mb-4 max-w-full">
@@ -181,6 +219,9 @@ export default function Index({ alternatives, flash }) {
                     <div className="mb-2">
                         {renderStatusBadge(alternative)}
                     </div>
+                    <div className="mb-2">
+                        {renderCommitteeBadge(alternative)}
+                    </div>
                 </div>
             </div>
             <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap gap-1">
@@ -194,18 +235,22 @@ export default function Index({ alternatives, flash }) {
                     </svg>
                     PENILAIAN
                 </button>
-                <button
-                    onClick={() => handleEditAlternative(alternative)}
-                    className="inline-flex items-center px-2 sm:px-3 py-1 border border-blue-300 text-blue-600 rounded text-xs font-medium hover:bg-blue-50 hover:border-blue-400 transition-colors"
-                >
-                    EDIT
-                </button>
-                <button
-                    onClick={() => handleDeleteAlternative(alternative)}
-                    className="inline-flex items-center px-2 sm:px-3 py-1 border border-red-300 text-red-600 rounded text-xs font-medium hover:bg-red-50 hover:border-red-400 transition-colors"
-                >
-                    HAPUS
-                </button>
+                {canManage && (
+                    <>
+                        <button
+                            onClick={() => handleEditAlternative(alternative)}
+                            className="inline-flex items-center px-2 sm:px-3 py-1 border border-blue-300 text-blue-600 rounded text-xs font-medium hover:bg-blue-50 hover:border-blue-400 transition-colors"
+                        >
+                            EDIT
+                        </button>
+                        <button
+                            onClick={() => handleDeleteAlternative(alternative)}
+                            className="inline-flex items-center px-2 sm:px-3 py-1 border border-red-300 text-red-600 rounded text-xs font-medium hover:bg-red-50 hover:border-red-400 transition-colors"
+                        >
+                            HAPUS
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );
@@ -238,18 +283,20 @@ export default function Index({ alternatives, flash }) {
                                     <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Opsi Kebijakan</h1>
                                     <p className="text-sm sm:text-base text-gray-600">Kelola opsi kebijakan untuk analisis TOPSIS</p>
                                 </div>
-                                <div className="flex-shrink-0">
-                                    <button
-                                        onClick={handleAddAlternative}
-                                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
-                                    >
-                                        <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
-                                        </svg>
-                                        <span className="hidden sm:inline">TAMBAHKAN OPSI</span>
-                                        <span className="sm:hidden">TAMBAH</span>
-                                    </button>
-                                </div>
+                                {canManage && (
+                                    <div className="flex-shrink-0">
+                                        <button
+                                            onClick={handleAddAlternative}
+                                            className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white font-medium text-xs sm:text-sm rounded-lg hover:from-blue-600 hover:to-teal-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
+                                        >
+                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd"/>
+                                            </svg>
+                                            <span className="hidden sm:inline">TAMBAHKAN OPSI</span>
+                                            <span className="sm:hidden">TAMBAH</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                                                         {/* Information Cards */}
@@ -401,6 +448,9 @@ export default function Index({ alternatives, flash }) {
                                                         STATUS
                                                     </th>
                                                     <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        PENILAIAN KOMITE
+                                                    </th>
+                                                    <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         AKSI
                                                     </th>
                                                 </tr>
@@ -468,6 +518,9 @@ export default function Index({ alternatives, flash }) {
                                                                 {renderStatusBadge(alternative)}
                                                             </td>
                                                             <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                                                                {renderCommitteeBadge(alternative)}
+                                                            </td>
+                                                            <td className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
                                                                 <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                                                                     <button
                                                                         onClick={() => handleGoToAssessmentList(alternative)}
@@ -480,18 +533,22 @@ export default function Index({ alternatives, flash }) {
                                                                         </svg>
                                                                         <span className="hidden sm:inline">PENILAIAN</span>
                                                                     </button>
-                                                                    <button
-                                                                        onClick={() => handleEditAlternative(alternative)}
-                                                                        className="inline-flex items-center px-2 sm:px-3 py-1 border border-blue-300 text-blue-600 rounded text-xs font-medium hover:bg-blue-50 hover:border-blue-400 transition-colors"
-                                                                    >
-                                                                        EDIT
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleDeleteAlternative(alternative)}
-                                                                        className="inline-flex items-center px-2 sm:px-3 py-1 border border-red-300 text-red-600 rounded text-xs font-medium hover:bg-red-50 hover:border-red-400 transition-colors"
-                                                                    >
-                                                                        HAPUS
-                                                                    </button>
+                                                                    {canManage && (
+                                                                        <>
+                                                                            <button
+                                                                                onClick={() => handleEditAlternative(alternative)}
+                                                                                className="inline-flex items-center px-2 sm:px-3 py-1 border border-blue-300 text-blue-600 rounded text-xs font-medium hover:bg-blue-50 hover:border-blue-400 transition-colors"
+                                                                            >
+                                                                                EDIT
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleDeleteAlternative(alternative)}
+                                                                                className="inline-flex items-center px-2 sm:px-3 py-1 border border-red-300 text-red-600 rounded text-xs font-medium hover:bg-red-50 hover:border-red-400 transition-colors"
+                                                                            >
+                                                                                HAPUS
+                                                                            </button>
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -693,6 +750,85 @@ export default function Index({ alternatives, flash }) {
                                 Hapus
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Detail Penilaian Komite */}
+            {showCommitteeModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+                    <div className="bg-white rounded-xl p-5 sm:p-6 w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto shadow-xl">
+                        {/* Header Modal */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Penilaian Komite</h3>
+                                <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[260px]">
+                                    Opsi: <span className="font-medium text-gray-700">{committeeModalData.alternative?.name}</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowCommitteeModal(false)}
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Progress summary */}
+                        <div className="flex items-center space-x-3 mb-5 p-3 bg-gray-50 rounded-lg">
+                            <div className={`text-2xl font-bold ${committeeModalData.raters.length === committeeModalData.total && committeeModalData.total > 0 ? 'text-green-600' : committeeModalData.raters.length > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                {committeeModalData.raters.length} / {committeeModalData.total}
+                            </div>
+                            <div className="text-sm text-gray-600">komite telah memberikan penilaian</div>
+                        </div>
+
+                        {/* List komite */}
+                        {committeeModalData.total === 0 ? (
+                            <p className="text-center text-sm text-gray-500 py-4">Belum ada komite yang terdaftar di sekolah ini.</p>
+                        ) : (
+                            <ul className="divide-y divide-gray-100">
+                                {/* Build full list: all committees, marking who rated */}
+                                {/* We show raters + non-raters from the alternative data */}
+                                {committeeModalData.raters.length === 0 ? (
+                                    <li className="py-4 text-center text-sm text-gray-500">
+                                        Belum ada komite yang menilai opsi ini.
+                                    </li>
+                                ) : (
+                                    committeeModalData.raters.map((rater) => (
+                                        <li key={rater.id} className="flex items-center space-x-3 py-3">
+                                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm uppercase flex-shrink-0">
+                                                {rater.name.charAt(0)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{rater.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{rater.email}</p>
+                                            </div>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">
+                                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                                </svg>
+                                                Sudah menilai
+                                            </span>
+                                        </li>
+                                    ))
+                                )}
+                            </ul>
+                        )}
+
+                        {committeeModalData.raters.length < committeeModalData.total && committeeModalData.total > 0 && (
+                            <p className="mt-3 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                                {committeeModalData.total - committeeModalData.raters.length} komite belum memberikan penilaian pada opsi ini.
+                            </p>
+                        )}
+
+                        <button
+                            onClick={() => setShowCommitteeModal(false)}
+                            className="mt-5 w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                        >
+                            Tutup
+                        </button>
                     </div>
                 </div>
             )}

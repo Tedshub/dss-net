@@ -24,15 +24,19 @@ class ValueController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil alternatif milik user
-        $alternatives = Alternative::where('user_id', $user->id)->get();
+        // Tentukan target user: jika sub_guest, gunakan parent_id (kepala sekolah)
+        $ownerId = ($user->role === 'sub_guest') ? $user->parent_id : $user->id;
 
-        // Ambil semua kriteria (untuk admin atau sesuai requirement)
+        // Ambil alternatif milik kepala sekolah
+        $alternatives = Alternative::where('user_id', $ownerId)->get();
+
+        // Ambil semua kriteria
         $criterias = Criteria::all();
 
-        // Ambil values yang sudah ada
-        $existingValues = Value::whereHas('alternative', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
+        // Ambil values yang sudah diisi oleh USER SAAT INI (bukan user lain)
+        $existingValues = Value::where('user_id', $user->id)
+            ->whereHas('alternative', function ($query) use ($ownerId) {
+                $query->where('user_id', $ownerId);
             })
             ->with(['alternative', 'criteria'])
             ->get()
@@ -53,10 +57,10 @@ class ValueController extends Controller
                 $existingValue = $existingValues->get($key);
 
                 $row['values'][] = [
-                    'criteria' => $criteria,
-                    'value' => $existingValue ? $existingValue->first()->value : null,
+                    'criteria'       => $criteria,
+                    'value'          => $existingValue ? $existingValue->first()->value : null,
                     'alternative_id' => $alternative->id,
-                    'criteria_id' => $criteria->id
+                    'criteria_id'    => $criteria->id
                 ];
             }
 
@@ -64,11 +68,12 @@ class ValueController extends Controller
         }
 
         return Inertia::render('Values/Index', [
-            'matrix' => $matrix,
-            'criterias' => $criterias,
+            'matrix'       => $matrix,
+            'criterias'    => $criterias,
             'alternatives' => $alternatives,
         ]);
     }
+
 
     /**
      * Update or create multiple values at once (untuk batch update dari matrix)
@@ -76,25 +81,26 @@ class ValueController extends Controller
     public function updateMatrix(Request $request)
     {
         $user = Auth::user();
+        $ownerId = ($user->role === 'sub_guest') ? $user->parent_id : $user->id;
 
         $request->validate([
-            'values' => 'required|array',
+            'values'                  => 'required|array',
             'values.*.alternative_id' => 'required|exists:alternatives,id',
-            'values.*.criteria_id' => 'required|exists:criterias,id',
-            'values.*.value' => 'nullable|numeric',
+            'values.*.criteria_id'    => 'required|exists:criterias,id',
+            'values.*.value'          => 'nullable|numeric',
         ]);
 
         foreach ($request->values as $valueData) {
-            // Pastikan alternative milik user ini
+            // Pastikan alternative milik kepala sekolah yang benar
             $alternative = Alternative::where('id', $valueData['alternative_id'])
-                ->where('user_id', $user->id)
+                ->where('user_id', $ownerId)
                 ->firstOrFail();
 
-            // Selalu create/update record, set value ke null jika kosong
             Value::updateOrCreate(
                 [
                     'alternative_id' => $alternative->id,
-                    'criteria_id' => $valueData['criteria_id'],
+                    'criteria_id'    => $valueData['criteria_id'],
+                    'user_id'        => $user->id, // Simpan sebagai user yang login
                 ],
                 [
                     'value' => ($valueData['value'] !== null && $valueData['value'] !== '')
@@ -113,23 +119,24 @@ class ValueController extends Controller
     public function updateSingle(Request $request)
     {
         $user = Auth::user();
+        $ownerId = ($user->role === 'sub_guest') ? $user->parent_id : $user->id;
 
         $request->validate([
             'alternative_id' => 'required|exists:alternatives,id',
-            'criteria_id' => 'required|exists:criterias,id',
-            'value' => 'nullable|numeric',
+            'criteria_id'    => 'required|exists:criterias,id',
+            'value'          => 'nullable|numeric',
         ]);
 
-        // Pastikan alternative milik user ini
+        // Pastikan alternative milik kepala sekolah yang benar
         $alternative = Alternative::where('id', $request->alternative_id)
-            ->where('user_id', $user->id)
+            ->where('user_id', $ownerId)
             ->firstOrFail();
 
-        // Selalu create/update record, set value ke null jika kosong
         $value = Value::updateOrCreate(
             [
                 'alternative_id' => $alternative->id,
-                'criteria_id' => $request->criteria_id,
+                'criteria_id'    => $request->criteria_id,
+                'user_id'        => $user->id, // Simpan sebagai user yang login
             ],
             [
                 'value' => ($request->value !== null && $request->value !== '')
@@ -176,6 +183,7 @@ class ValueController extends Controller
                     [
                         'alternative_id' => $alternative->id,
                         'criteria_id' => $criteria->id,
+                        'user_id' => $user->id,
                     ],
                     [
                         'value' => null,
@@ -215,6 +223,7 @@ class ValueController extends Controller
                         [
                             'alternative_id' => $alternative->id,
                             'criteria_id' => $criteria->id,
+                            'user_id' => $user->id,
                         ],
                         [
                             'value' => null,
@@ -286,6 +295,7 @@ class ValueController extends Controller
             [
                 'alternative_id' => $alternative->id,
                 'criteria_id'    => $request->criteria_id,
+                'user_id'        => $user->id,
             ],
             [
                 'value' => $request->value,
@@ -382,6 +392,7 @@ class ValueController extends Controller
                     [
                         'alternative_id' => $alternative->id,
                         'criteria_id' => $criteria->id,
+                        'user_id' => $user->id,
                     ],
                     [
                         'value' => null,

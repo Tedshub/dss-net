@@ -28,13 +28,20 @@ class TopsisService
             ];
         }
 
-        // --- 1. Build Decision Matrix X
+        // --- 1. Build Decision Matrix X (Averaged across Headmaster & Committees)
         $X = [];
         foreach ($alternatives as $alt) {
             $row = [];
             foreach ($criterias as $c) {
-                $valModel = $alt->values->firstWhere('criteria_id', $c->id);
-                $val = $valModel ? floatval($valModel->value) : 0.0;
+                $valModels = $alt->values->where('criteria_id', $c->id);
+                if ($valModels->isEmpty()) {
+                    $val = 0.0;
+                } else {
+                    // Hitung rata-rata
+                    $sum = $valModels->sum('value');
+                    $count = $valModels->count();
+                    $val = $count > 0 ? floatval($sum / $count) : 0.0;
+                }
                 $row[$c->id] = $val;
             }
             $X[$alt->id] = $row;

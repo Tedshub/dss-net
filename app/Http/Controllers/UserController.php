@@ -13,11 +13,36 @@ class UserController extends Controller
 {
     public function index()
     {
-        // Search logic bisa ditambahkan nanti jika perlu
-        $users = User::latest()->paginate(10);
+        $user = auth()->user();
+
+        if ($user->role === 'admin') {
+            // Admin melihat daftar Kepala Sekolah (guest)
+            $users = User::where('role', 'guest')->latest()->paginate(10);
+        } else if ($user->role === 'guest') {
+            // Kepala Sekolah melihat daftar Komitenya (sub_guest yang parent_id nya adalah ID guest ini)
+            $users = User::where('parent_id', $user->id)->latest()->paginate(10);
+        } else {
+            abort(403);
+        }
 
         return Inertia::render("Users/Index", [
             "users" => $users,
+        ]);
+    }
+
+    public function show(User $user)
+    {
+        // Hanya admin yang bisa melihat detail sekolah (beserta komitenya)
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        // Ambil komite bawahan dari user guest ini
+        $committees = User::where('parent_id', $user->id)->latest()->get();
+
+        return Inertia::render("Users/Show", [
+            "schoolUser" => $user,
+            "committees" => $committees,
         ]);
     }
 
@@ -33,13 +58,26 @@ class UserController extends Controller
                 'email' => 'required|string|email|max:255|unique:'.User::class,
                 'password' => ['required', 'confirmed', Rules\Password::defaults()],
             ]);
-    
-            // 1. Simpan user ke variabel $user
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
+        $userData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->has('role') ? $request->role : 'sub_guest',
+        ];
+
+        if ($request->has('school_name')) {
+            $userData['school_name'] = $request->school_name;
+        }
+        
+        // Jika yang membuat adalah guest (Kepala Sekolah), otomatis set parent_id
+        if (auth()->user()->role === 'guest') {
+            $userData['parent_id'] = auth()->user()->id;
+            $userData['role'] = 'sub_guest'; // Guest hanya bisa buat sub_guest
+        } else if ($request->has('parent_id')) {
+            $userData['parent_id'] = $request->parent_id;
+        }
+
+        $user = User::create($userData);
     
             // 2. Kirim Notifikasi Welcome Email
             // Kita kirimkan password mentah ($request->password) agar bisa ditampilkan di email
@@ -79,8 +117,22 @@ class UserController extends Controller
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role,
         ];
+
+        // Hanya admin yang bisa mengubah role
+        if (auth()->user()->role === 'admin') {
+            $userData['role'] = $request->role;
+        }
+
+        if ($request->has('school_name')) {
+            $userData['school_name'] = $request->school_name;
+        }
+        
+        if (auth()->user()->role === 'guest') {
+            // Guest tidak bisa merubah parent_id komitenya
+        } else if ($request->has('parent_id')) {
+            $userData['parent_id'] = $request->parent_id;
+        }
 
         // Hanya update password jika input tidak kosong
         if ($request->filled('password')) {

@@ -18,21 +18,32 @@ class RegisteredUserController extends Controller
 {
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $schools = User::where('role', 'guest')
+            ->whereNotNull('school_name')
+            ->get(['id', 'name', 'school_name']);
+        return Inertia::render('Auth/Register', [
+            'schools' => $schools,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            'role' => 'required|in:guest,sub_guest',
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'school_name' => 'required_if:role,guest|nullable|string|max:255',
+            'parent_id' => 'required_if:role,sub_guest|nullable|exists:users,id',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'school_name' => $request->role === 'guest' ? $request->school_name : null,
+            'parent_id' => $request->role === 'sub_guest' ? $request->parent_id : null,
         ]);
 
         event(new Registered($user));
