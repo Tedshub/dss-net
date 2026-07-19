@@ -11,6 +11,8 @@ class Value extends Model
         'criteria_id',
         'user_id',
         'value',
+        'budget_min',
+        'budget_max',
     ];
 
     public function user()

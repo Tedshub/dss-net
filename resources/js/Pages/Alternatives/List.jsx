@@ -1,9 +1,12 @@
 // resources/js/Pages/Alternatives/List.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AssessmentList({ alternative, criterias }) {
+export default function AssessmentList({ alternative, criterias, ksBudget }) {
+    const { auth } = usePage().props;
+    const userRole = auth.user.role;
+
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const assessmentItems = [
@@ -37,7 +40,7 @@ export default function AssessmentList({ alternative, criterias }) {
             options: [
                 { label: 'Komponen dan Indikator dengan skor rendah, dengan warna merah', value: 5 },
                 { label: 'Komponen dan Indikator dengan skor sedang, dengan warna kuning', value: 4 },
-                { label: 'Indikator yang mengalami penurunan paling tinggi atau kenaikan paling rendah', value: 3 }
+                { label: 'Indikator yang mengalami penurunan paling tinggi atau kenaikan paling rendah', value: 3 }
             ]
         },
         {
@@ -122,7 +125,7 @@ export default function AssessmentList({ alternative, criterias }) {
             criteria_code: 'C11',
             item: 'Masukkan anggaran kegiatan',
             subtitle: '(Anggaran)',
-            is_input: true // Penanda bahwa ini adalah isian teks, bukan pilihan
+            is_budget: true
         }
     ];
 
@@ -131,7 +134,9 @@ export default function AssessmentList({ alternative, criterias }) {
         answers: {}
     });
 
-    const [anggaranDisplay, setAnggaranDisplay] = useState(''); // State untuk tampilan format rupiah
+    // State untuk tampilan format rupiah (Kepala Sekolah)
+    const [anggaranMinDisplay, setAnggaranMinDisplay] = useState('');
+    const [anggaranMaxDisplay, setAnggaranMaxDisplay] = useState('');
 
     // Fungsi format rupiah
     const formatRupiah = (number) => {
@@ -149,41 +154,62 @@ export default function AssessmentList({ alternative, criterias }) {
         });
     };
 
-    const handleAnggaranChange = (e, itemId) => {
-        // Hanya ambil angka
+    // Handler untuk input anggaran Kepala Sekolah (min atau max)
+    const handleAnggaranKSChange = (e, field) => {
         const rawValue = e.target.value.replace(/[^0-9]/g, '');
-        
-        if (rawValue) {
-            const numericValue = parseInt(rawValue, 10);
-            setAnggaranDisplay(formatRupiah(numericValue));
-            handleOptionChange(itemId, numericValue);
+        const numericValue = rawValue ? parseInt(rawValue, 10) : null;
+        const formatted = rawValue ? formatRupiah(numericValue) : '';
+
+        if (field === 'min') {
+            setAnggaranMinDisplay(formatted);
         } else {
-            setAnggaranDisplay('');
-            // Hapus dari answers jika kosong
+            setAnggaranMaxDisplay(formatted);
+        }
+
+        const currentC11 = data.answers[11] || {};
+        if (numericValue !== null) {
+            setData('answers', {
+                ...data.answers,
+                [11]: { ...currentC11, [field]: numericValue }
+            });
+        } else {
+            const updated = { ...currentC11 };
+            delete updated[field];
             const newAnswers = { ...data.answers };
-            delete newAnswers[itemId];
+            if (Object.keys(updated).length === 0) {
+                delete newAnswers[11];
+            } else {
+                newAnswers[11] = updated;
+            }
             setData('answers', newAnswers);
         }
     };
 
+    // Cek apakah C11 sudah terisi berdasarkan role
+    const isC11Answered = () => {
+        if (userRole === 'guest') {
+            const c11 = data.answers[11];
+            return c11 && c11.min !== undefined && c11.min > 0
+                && c11.max !== undefined && c11.max > 0
+                && c11.max >= c11.min;
+        }
+        // sub_guest: nilai tunggal
+        return data.answers[11] !== undefined && data.answers[11] !== null;
+    };
+
     const isAllItemsAnswered = () => {
         return assessmentItems.every(item => {
-            const answer = data.answers[item.id];
-            if (item.is_input) {
-                return answer !== undefined && answer !== null && answer > 0;
-            }
-            return answer !== undefined;
+            if (item.is_budget) return isC11Answered();
+            return data.answers[item.id] !== undefined;
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         if (!isAllItemsAnswered()) {
             alert('Mohon jawab semua item sebelum menyimpan!');
             return;
         }
-
         setShowConfirmModal(true);
     };
 
@@ -200,7 +226,15 @@ export default function AssessmentList({ alternative, criterias }) {
     };
 
     const getAnsweredCount = () => {
-        return Object.keys(data.answers).length;
+        let count = 0;
+        assessmentItems.forEach(item => {
+            if (item.is_budget) {
+                if (isC11Answered()) count++;
+            } else if (data.answers[item.id] !== undefined) {
+                count++;
+            }
+        });
+        return count;
     };
 
     return (
@@ -238,7 +272,7 @@ export default function AssessmentList({ alternative, criterias }) {
                                                 Daftar Penilaian Opsi Kebijakan
                                             </h1>
                                             <p className="text-sm sm:text-base text-blue-50 mb-1">
-                                                Opsi: <span className="font-semibold">{alternative.name}</span>
+                                                Nama Kebijakan: <span className="font-semibold">{alternative.name}</span>
                                             </p>
                                             <p className="text-sm sm:text-base text-blue-50">
                                                 Kode: <span className="font-semibold">{alternative.code}</span>
@@ -264,16 +298,16 @@ export default function AssessmentList({ alternative, criterias }) {
                                             className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6"
                                         >
                                             <div className="flex items-start space-x-3 mb-4">
-                                                <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base ${data.answers[item.id] ? 'bg-green-500' : 'bg-gray-400'}`}>
-                                                    {data.answers[item.id] ? '✓' : index + 1}
+                                                <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base ${
+                                                    (item.is_budget ? isC11Answered() : data.answers[item.id] !== undefined)
+                                                        ? 'bg-green-500' : 'bg-gray-400'
+                                                }`}>
+                                                    {(item.is_budget ? isC11Answered() : data.answers[item.id] !== undefined) ? '✓' : index + 1}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                                                         {item.item}
                                                     </h3>
-                                                    {/* <p className="text-xs sm:text-sm text-gray-500">
-                                                        {item.subtitle}
-                                                    </p> */}
                                                     <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
                                                         Kriteria: {item.criteria_code}
                                                     </span>
@@ -281,23 +315,131 @@ export default function AssessmentList({ alternative, criterias }) {
                                             </div>
 
                                             <div className="space-y-3 ml-0 sm:ml-13">
-                                                {item.is_input ? (
-                                                    <div className="mt-2">
-                                                        <input
-                                                            type="text"
-                                                            value={anggaranDisplay}
-                                                            onChange={(e) => handleAnggaranChange(e, item.id)}
-                                                            placeholder="Rp 0"
-                                                            className="w-full sm:max-w-md border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-900"
-                                                        />
-                                                        <p className="text-xs text-amber-600 mt-2 italic flex items-center">
-                                                            <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
-                                                            </svg>
-                                                            Masukan nominal anggaran hanya berupa angka tanpa huruf dan tanda baca lainnya, format nominal otomatis disesuaikan.
-                                                        </p>
-                                                    </div>
+                                                {item.is_budget ? (
+                                                    // ========= RENDER C11 BERDASARKAN ROLE =========
+                                                    userRole === 'guest' ? (
+                                                        // --- Kepala Sekolah: 2 input nominal ---
+                                                        <div className="mt-2 space-y-4">
+                                                            <p className="text-sm font-medium text-gray-700">
+                                                                Masukkan estimasi anggaran kegiatan (Nominal):
+                                                            </p>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                                                                        Estimasi Minimal
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={anggaranMinDisplay}
+                                                                        onChange={(e) => handleAnggaranKSChange(e, 'min')}
+                                                                        placeholder="Rp 0"
+                                                                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-900"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                                                                        Estimasi Maksimal
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={anggaranMaxDisplay}
+                                                                        onChange={(e) => handleAnggaranKSChange(e, 'max')}
+                                                                        placeholder="Rp 0"
+                                                                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-gray-900"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            {/* Preview rata-rata */}
+                                                            {data.answers[11] && data.answers[11].min && data.answers[11].max && data.answers[11].max >= data.answers[11].min && (
+                                                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                                                    <p className="text-xs text-blue-700 font-medium">
+                                                                        Nilai C11 masuk ke TOPSIS (rata-rata):&nbsp;
+                                                                        <span className="font-bold">
+                                                                            {formatRupiah((data.answers[11].min + data.answers[11].max) / 2)}
+                                                                        </span>
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                            {data.answers[11] && data.answers[11].min && data.answers[11].max && data.answers[11].max < data.answers[11].min && (
+                                                                <p className="text-xs text-red-600 font-medium">⚠ Estimasi maksimal tidak boleh lebih kecil dari estimasi minimal.</p>
+                                                            )}
+                                                            <p className="text-xs text-amber-600 italic flex items-center">
+                                                                <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                                                                </svg>
+                                                                Nilai TOPSIS = rata-rata(Min, Maks). Nilai ini menjadi acuan pilihan untuk Bendahara.
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        // --- Bendahara: Radio pilih nominal dari KS ---
+                                                        <div className="mt-2">
+                                                            {ksBudget && ksBudget.min !== null && ksBudget.max !== null ? (
+                                                                <div className="space-y-3">
+                                                                    <p className="text-sm font-medium text-gray-700">
+                                                                        Pilih nominal anggaran yang disetujui:
+                                                                    </p>
+                                                                    {[
+                                                                        { label: 'Estimasi Minimal', value: ksBudget.min, tag: 'Min', color: 'bg-green-100 text-green-700' },
+                                                                        { label: 'Estimasi Maksimal', value: ksBudget.max, tag: 'Maks', color: 'bg-purple-100 text-purple-700' }
+                                                                    ].map((opt, optIdx) => (
+                                                                        <label
+                                                                            key={optIdx}
+                                                                            className={`flex items-start p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                                                                data.answers[11] === opt.value
+                                                                                    ? 'border-blue-500 bg-blue-50'
+                                                                                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                                                            }`}
+                                                                        >
+                                                                            <input
+                                                                                type="radio"
+                                                                                name="item_11"
+                                                                                value={opt.value}
+                                                                                checked={data.answers[11] === opt.value}
+                                                                                onChange={() => handleOptionChange(11, opt.value)}
+                                                                                className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+                                                                            />
+                                                                            <div className="ml-3 flex-1">
+                                                                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                                                    <span className="text-sm sm:text-base text-gray-700 font-medium">
+                                                                                        {opt.label}
+                                                                                    </span>
+                                                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${opt.color}`}>
+                                                                                        {opt.tag}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <span className="text-base sm:text-lg font-bold text-blue-700">
+                                                                                    {formatRupiah(opt.value)}
+                                                                                </span>
+                                                                            </div>
+                                                                        </label>
+                                                                    ))}
+                                                                    <p className="text-xs text-amber-600 italic flex items-center">
+                                                                        <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                                                                        </svg>
+                                                                        Nominal yang Anda pilih akan masuk ke perhitungan TOPSIS sebagai penilaian Anda.
+                                                                    </p>
+                                                                </div>
+                                                            ) : (
+                                                                // KS belum mengisi anggaran
+                                                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                                                    <div className="flex items-start gap-3">
+                                                                        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                                                                        </svg>
+                                                                        <div>
+                                                                            <p className="text-sm font-semibold text-amber-800">Anggaran Belum Tersedia</p>
+                                                                            <p className="text-xs text-amber-700 mt-1">
+                                                                                Kepala Sekolah belum mengisi estimasi anggaran untuk opsi kebijakan ini. Silakan minta Kepala Sekolah untuk mengisi terlebih dahulu.
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
                                                 ) : (
+                                                    // ========= RENDER OPSI PILIHAN BIASA =========
                                                     item.options.map((option, optIndex) => (
                                                         <label
                                                             key={optIndex}

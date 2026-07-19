@@ -223,7 +223,7 @@ export default function Register({ schools }) {
                                     onClick={() => handleRoleSelect('sub_guest')}
                                     className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex justify-center items-center text-lg"
                                 >
-                                    Daftar Sebagai Komite
+                                    Daftar Sebagai Bendahara Sekolah
                                 </button>
                             </div>
                             
@@ -241,7 +241,7 @@ export default function Register({ schools }) {
                             <div className="text-left mb-8 animate-fade-in-up flex items-center justify-between" style={{ animationDelay: '0.4s' }}>
                                 <div>
                                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                        Daftar Sebagai {selectedRole === 'guest' ? 'Kepala Sekolah' : 'Komite'}
+                                        Daftar Sebagai {selectedRole === 'guest' ? 'Kepala Sekolah' : 'Bendahara Sekolah'}
                                     </h1>
                                     <p className="text-gray-500 text-sm">
                                         Buat akun Anda untuk mengakses sistem.

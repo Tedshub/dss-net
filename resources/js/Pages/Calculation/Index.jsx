@@ -12,7 +12,8 @@ import {
     AlertCircle,
     Award,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    Lightbulb
 } from 'lucide-react';
 
 export default function Index({ initialData = null }) {
@@ -304,16 +305,43 @@ export default function Index({ initialData = null }) {
 
                             {/* Winner Card */}
                             {result?.ranking?.length > 0 && (
-                                <div className="bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6">
+                                <div className="bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg sm:rounded-xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-6 shadow-lg">
                                     <div className="text-center">
-                                        <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+                                        <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto shadow-md">
                                             <Award className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-yellow-800" />
                                         </div>
-                                        <h3 className="text-base sm:text-xl lg:text-2xl font-bold mb-2">Alternatif Kebijakan yang Direkomendasikan</h3>
-                                        <div className="bg-white bg-opacity-20 rounded-lg p-3 sm:p-4 inline-block max-w-full">
+                                        <h3 className="text-base sm:text-xl lg:text-2xl font-bold mb-2">Opsi Kebijakan yang Direkomendasikan</h3>
+                                        <div className="bg-white bg-opacity-20 rounded-lg p-3 sm:p-4 inline-block max-w-full mb-4 sm:mb-5">
                                             <p className="text-sm sm:text-lg font-semibold truncate break-words px-2">{result.ranking[0].name}</p>
                                             <p className="text-xs sm:text-sm opacity-90">Kode: {result.ranking[0].code}</p>
-                                            <p className="text-xs sm:text-sm opacity-90">Nilai: {parseFloat(result.ranking[0].value).toFixed(4)}</p>
+                                            <p className="text-xs sm:text-sm opacity-90 font-medium bg-white/20 px-2 py-0.5 rounded mt-1 inline-block">Nilai: {parseFloat(result.ranking[0].value).toFixed(4)}</p>
+                                        </div>
+                                        
+                                        {/* Explanation Subsystem */}
+                                        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 sm:p-5 text-left text-sm sm:text-base leading-relaxed max-w-3xl mx-auto shadow-inner">
+                                            <div className="flex items-start gap-3">
+                                                <div className="mt-1 bg-white/20 p-2 rounded-full flex-shrink-0 shadow-sm">
+                                                    <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-300" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold mb-2 text-yellow-50 flex items-center">
+                                                        Alasan Rekomendasi 
+                                                        <span className="ml-2 text-xs bg-blue-500/50 text-white px-2 py-0.5 rounded-full border border-blue-400/30">Auto-Generated</span>
+                                                    </p>
+                                                    <p className="opacity-95 mb-2 text-sm sm:text-base">
+                                                        Sistem merekomendasikan opsi kebijakan <strong>{result.ranking[0].name}</strong> karena memiliki 
+                                                        Nilai Preferensi (V) tertinggi di antara opsi lainnya, yaitu <strong>{parseFloat(result.ranking[0].value).toFixed(4)}</strong> dari skala 1.0.
+                                                    </p>
+                                                    {result.D && result.D.find(d => d.alternative_id === result.ranking[0].alternative_id) && (() => {
+                                                        const winnerD = result.D.find(d => d.alternative_id === result.ranking[0].alternative_id);
+                                                        return (
+                                                            <p className="opacity-90 text-xs sm:text-sm bg-black/10 p-3 rounded-lg border border-black/5 leading-relaxed">
+                                                                Berdasarkan metode TOPSIS, opsi ini merupakan alternatif yang paling optimal karena karakteristik nilainya paling mendekati solusi ideal (Jarak Positif: {parseFloat(winnerD.D_pos).toFixed(4)}) dan sekaligus paling menjauhi solusi terburuk (Jarak Negatif: {parseFloat(winnerD.D_neg).toFixed(4)}). Artinya, opsi ini paling baik dalam menyeimbangkan kebutuhan untuk memaksimalkan kriteria keuntungan dan meminimalkan kriteria biaya.
+                                                            </p>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -7,14 +7,14 @@ export default function UserIndex({ users }) {
 
     // Fungsi untuk menghapus user
     const handleDelete = (id, name) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus ${isAdmin ? 'Sekolah' : 'Komite'} ${name}?`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus ${isAdmin ? 'Sekolah' : 'Bendahara'} ${name}?`)) {
             router.delete(route("users.destroy", id));
         }
     };
 
     return (
         <>
-            <Head title={isAdmin ? "Daftar Sekolah" : "Manajemen Komite"} />
+            <Head title={isAdmin ? "Daftar Sekolah" : "Manajemen Bendahara"} />
 
             <div className="min-h-screen bg-gray-50">
                 {/* Header Section */}
@@ -33,7 +33,7 @@ export default function UserIndex({ users }) {
                 
                                 <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                                     <User className="h-5 w-5 text-purple-600" />
-                                    {isAdmin ? "Daftar Sekolah (Kepala Sekolah)" : "Daftar Komite"}
+                                    {isAdmin ? "Daftar Sekolah (Kepala Sekolah)" : "Daftar Bendahara"}
                                 </h1>
                             </div>
                 
@@ -44,7 +44,7 @@ export default function UserIndex({ users }) {
                                     className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors duration-200 shadow-sm"
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
-                                    Tambah Komite
+                                    Tambah Bendahara
                                 </Link>
                             )}
                             
@@ -62,7 +62,7 @@ export default function UserIndex({ users }) {
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        placeholder={`Cari ${isAdmin ? 'sekolah' : 'komite'}...`}
+                                        placeholder={`Cari ${isAdmin ? 'sekolah' : 'bendahara'}...`}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-purple-500 focus:border-purple-500"
                                     />
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -143,7 +143,7 @@ export default function UserIndex({ users }) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'guest' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                                                            {user.role === 'guest' ? 'Kepala Sekolah' : 'Komite'}
+                                                            {user.role === 'guest' ? 'Kepala Sekolah' : 'Bendahara'}
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -152,7 +152,7 @@ export default function UserIndex({ users }) {
                                                                 <Link
                                                                     href={route("users.show", user.id)}
                                                                     className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-md hover:bg-blue-100 transition-colors"
-                                                                    title="Lihat Detail Komite"
+                                                                    title="Lihat Detail Bendahara"
                                                                 >
                                                                     <Eye className="h-4 w-4" />
                                                                 </Link>

@@ -97,18 +97,23 @@ export default function Edit({ user }) {
                                                                                 onChange={(e) => setData("role", e.target.value)}
                                                                                 className="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500 shadow-sm bg-white"
                                                                             >
-                                                                                {currentUserRole === 'admin' && (
-                                                                                    <option value="admin">Admin</option>
-                                                                                )}
-                                                                                {(currentUserRole === 'admin' || currentUserRole === 'guest') && (
+                                                                                {currentUserRole === 'admin' ? (
+                                                                                    <>
+                                                                                        <option value="admin">Admin</option>
+                                                                                        <option value="guest">Kepala Sekolah</option>
+                                                                                        <option value="sub_guest">Bendahara</option>
+                                                                                    </>
+                                                                                ) : currentUserRole === 'guest' && user.role === 'sub_guest' ? (
+                                                                                    <option value="sub_guest">Bendahara</option>
+                                                                                ) : currentUserRole === 'guest' ? (
                                                                                     <>
                                                                                         <option value="guest">Kepala Sekolah</option>
-                                                                                        <option value="sub_guest">Komite</option>
+                                                                                        <option value="sub_guest">Bendahara</option>
                                                                                     </>
-                                                                                )}
+                                                                                ) : null}
                                                                             </select>
                                                             <p className="mt-1 text-xs text-gray-500">
-                                                                Admin memiliki akses penuh ke sistem. Guest hanya memiliki akses terbatas.
+                                                                Admin memiliki akses penuh ke sistem. Kepala Sekolah dan Bendahara hanya memiliki akses terbatas.
                                                             </p>
                                                             {errors.role && (
                                                                 <p className="mt-1 text-sm text-red-600">

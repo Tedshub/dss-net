@@ -12,7 +12,7 @@ class AdminMiddleware
         $user = $request->user();
 
         if (!$user || $user->role !== 'admin') {
-            abort(403, 'Unauthorized');
+            return inertia('Errors/403')->toResponse($request)->setStatusCode(403);
         }
 
         return $next($request);

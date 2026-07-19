@@ -193,9 +193,30 @@ class AlternativeController extends Controller
 
         $criterias = \App\Models\Criteria::all();
 
+        $user = auth()->user();
+
+        // Jika bendahara, ambil nilai budget_min dan budget_max milik kepala sekolahnya (parent)
+        $ksBudget = null;
+        if ($user->role === 'sub_guest' && $user->parent_id) {
+            $c11 = \App\Models\Criteria::where('code', 'C11')->first();
+            if ($c11) {
+                $ksValue = \App\Models\Value::where('alternative_id', $alternative->id)
+                    ->where('criteria_id', $c11->id)
+                    ->where('user_id', $user->parent_id)
+                    ->first();
+                if ($ksValue) {
+                    $ksBudget = [
+                        'min' => $ksValue->budget_min,
+                        'max' => $ksValue->budget_max,
+                    ];
+                }
+            }
+        }
+
         return Inertia::render('Alternatives/List', [
             'alternative' => $alternative,
             'criterias' => $criterias,
+            'ksBudget' => $ksBudget,
         ]);
     }
 
@@ -207,11 +228,25 @@ class AlternativeController extends Controller
         $user = auth()->user();
         $targetUserId = $user->role === 'sub_guest' ? $user->parent_id : $user->id;
 
-        $request->validate([
-            'alternative_id' => 'required|exists:alternatives,id',
-            'answers' => 'required|array|min:11',
-            'answers.*' => 'required|numeric'
-        ]);
+        // Validasi berbeda untuk C11 tergantung role
+        if ($user->role === 'guest') {
+            // Kepala Sekolah: C11 dikirim sebagai {min, max}
+            $request->validate([
+                'alternative_id'       => 'required|exists:alternatives,id',
+                'answers'              => 'required|array|min:11',
+                'answers.11'           => 'required|array',
+                'answers.11.min'       => 'required|numeric|min:0',
+                'answers.11.max'       => 'required|numeric|min:0|gte:answers.11.min',
+                'answers.*'            => 'nullable',
+            ]);
+        } else {
+            // Bendahara: C11 dikirim sebagai nilai numerik tunggal
+            $request->validate([
+                'alternative_id' => 'required|exists:alternatives,id',
+                'answers'        => 'required|array|min:11',
+                'answers.*'      => 'required|numeric',
+            ]);
+        }
 
         // Pastikan alternative milik user ini atau parent-nya
         $alternative = Alternative::where('id', $request->alternative_id)
@@ -222,19 +257,44 @@ class AlternativeController extends Controller
         $criterias = \App\Models\Criteria::all()->keyBy('code');
 
         // Simpan setiap jawaban ke tabel values
-        foreach ($request->answers as $itemId => $value) {
-            // Map itemId (1-11) ke format kode kriteria (C1-C11)
+        foreach ($request->answers as $itemId => $rawValue) {
             $criteriaCode = 'C' . $itemId;
 
-            if (isset($criterias[$criteriaCode])) {
+            if (!isset($criterias[$criteriaCode])) {
+                continue;
+            }
+
+            $criteria = $criterias[$criteriaCode];
+
+            // Perlakuan khusus untuk C11 (Anggaran)
+            if ($criteriaCode === 'C11' && $user->role === 'guest') {
+                // Kepala Sekolah: hitung rata-rata dari min dan max
+                $minVal = floatval($rawValue['min']);
+                $maxVal = floatval($rawValue['max']);
+                $avgVal = ($minVal + $maxVal) / 2;
+
                 \App\Models\Value::updateOrCreate(
                     [
                         'alternative_id' => $alternative->id,
-                        'criteria_id' => $criterias[$criteriaCode]->id,
-                        'user_id' => $user->id,
+                        'criteria_id'    => $criteria->id,
+                        'user_id'        => $user->id,
                     ],
                     [
-                        'value' => $value,
+                        'value'      => $avgVal,
+                        'budget_min' => $minVal,
+                        'budget_max' => $maxVal,
+                    ]
+                );
+            } else {
+                // Untuk semua kriteria lainnya, dan untuk Bendahara pada C11
+                \App\Models\Value::updateOrCreate(
+                    [
+                        'alternative_id' => $alternative->id,
+                        'criteria_id'    => $criteria->id,
+                        'user_id'        => $user->id,
+                    ],
+                    [
+                        'value' => floatval($rawValue),
                     ]
                 );
             }

@@ -125,7 +125,7 @@ export default function AuthenticatedLayout({ header, children }) {
             ),
             route: "values.index", // Akan menggunakan # sebagai placeholder
             active: route().current("values.*"),
-            allowedRoles: ["admin", "guest"], // Semua role bisa akses
+            allowedRoles: ["admin"], // Semua role bisa akses
         },
         {
             name: "Hitung",
@@ -157,7 +157,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     const getRoleLabel = (role) => {
         if (role === 'guest') return 'Kepala Sekolah';
-        if (role === 'sub_guest') return 'Komite';
+        if (role === 'sub_guest') return 'Bendahara Sekolah';
         if (role === 'admin') return 'Admin';
         return role;
     };
@@ -373,7 +373,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                                     </svg>
-                                                    <span>{user.role === 'admin' ? 'Pengguna' : 'Komite'}</span>
+                                                    <span>{user.role === 'admin' ? 'Pengguna' : 'Bendahara Sekolah'}</span>
                                                 </div>
                                             </Dropdown.Link>
                                         )}

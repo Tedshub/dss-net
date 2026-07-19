@@ -22,7 +22,7 @@ Route::get("/", function () {
 
 // Dashboard (auth & verified required)
 Route::get("/dashboard", [DashboardController::class, "index"])
-    ->middleware(["auth", "verified", "otp.verified"])
+    ->middleware(["auth", "verified", "otp.verified", "role:admin,guest"])
     ->name("dashboard");
 
 // Profile (auth required)
@@ -38,8 +38,10 @@ Route::middleware("auth")->group(function () {
         "profile.destroy",
     );
 
-    // 2. Route User Management (CRUD Admin)
-    Route::resource("users", UserController::class);
+    // 2. Route User Management (CRUD Admin & Guest)
+    Route::middleware(["role:admin,guest"])->group(function () {
+        Route::resource("users", UserController::class);
+    });
 });
 
 // Value routes (authenticated users can access)
@@ -57,42 +59,47 @@ Route::middleware("auth", "otp.verified")->group(function () {
         "storeList",
     ])->name("alternatives.list.store");
 
-    // Matriks Penilaian
-    Route::get("/values", [ValueController::class, "index"])->name(
-        "values.index",
-    );
-    Route::post("/values/matrix", [
-        ValueController::class,
-        "updateMatrix",
-    ])->name("values.matrix");
-    Route::post("/values/single", [
-        ValueController::class,
-        "updateSingle",
-    ])->name("values.single");
+    // Matriks Penilaian (Admin Only)
+    Route::middleware(["role:admin"])->group(function () {
+        Route::get("/values", [ValueController::class, "index"])->name(
+            "values.index",
+        );
+        Route::post("/values/matrix", [
+            ValueController::class,
+            "updateMatrix",
+        ])->name("values.matrix");
+        Route::post("/values/single", [
+            ValueController::class,
+            "updateSingle",
+        ])->name("values.single");
 
-    // Delete routes for values
-    Route::post("/values/delete-alternative", [
-        ValueController::class,
-        "deleteAlternativeValues",
-    ])->name("values.deleteAlternativeValues");
-    Route::post("/values/delete-all", [
-        ValueController::class,
-        "deleteAllValues",
-    ])->name("values.deleteAll");
+        // Delete routes for values
+        Route::post("/values/delete-alternative", [
+            ValueController::class,
+            "deleteAlternativeValues",
+        ])->name("values.deleteAlternativeValues");
+        Route::post("/values/delete-all", [
+            ValueController::class,
+            "deleteAllValues",
+        ])->name("values.deleteAll");
 
-    // Standard CRUD routes jika diperlukan
-    Route::resource("values", ValueController::class)->except(["index"]);
+        // Standard CRUD routes jika diperlukan
+        Route::resource("values", ValueController::class)->except(["index"]);
+    });
 
-    Route::get("/topsis", [TopsisController::class, "index"]); // JSON hasil
+    // Calculation (Admin & Guest)
+    Route::middleware(["role:admin,guest"])->group(function () {
+        Route::get("/topsis", [TopsisController::class, "index"]); // JSON hasil
 
-    // Route baru untuk halaman tampilan
-    Route::get("/calculation", [TopsisController::class, "view"])->name(
-        "calculation.index",
-    );
-    // atau bisa juga
-    Route::get("/topsis/view", [TopsisController::class, "view"])->name(
-        "topsis.view",
-    );
+        // Route baru untuk halaman tampilan
+        Route::get("/calculation", [TopsisController::class, "view"])->name(
+            "calculation.index",
+        );
+        // atau bisa juga
+        Route::get("/topsis/view", [TopsisController::class, "view"])->name(
+            "topsis.view",
+        );
+    });
 });
 
 // Admin routes

@@ -4,7 +4,7 @@ import { ArrowLeft, User, Mail, School, Users, Trash2, Edit } from "lucide-react
 export default function UserShow({ schoolUser, committees }) {
     // Fungsi untuk menghapus komite
     const handleDelete = (id, name) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus komite ${name}?`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus bendahara ${name}?`)) {
             router.delete(route("users.destroy", id));
         }
     };
@@ -81,10 +81,10 @@ export default function UserShow({ schoolUser, committees }) {
                             <div className="p-6 border-b border-gray-200 bg-white flex items-center justify-between">
                                 <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                     <Users className="w-5 h-5 text-purple-600" />
-                                    Daftar Komite
+                                    Daftar Bendahara
                                 </h2>
                                 <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                                    {committees.length} Komite
+                                    {committees.length} Bendahara
                                 </span>
                             </div>
 
@@ -93,7 +93,7 @@ export default function UserShow({ schoolUser, committees }) {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Nama Komite
+                                                Nama Bendahara
                                             </th>
                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Email
@@ -134,14 +134,14 @@ export default function UserShow({ schoolUser, committees }) {
                                                         <Link
                                                             href={route("users.edit", committee.id)}
                                                             className="text-blue-600 hover:text-blue-900 bg-blue-50 p-2 rounded-md hover:bg-blue-100 transition-colors mr-2 inline-flex"
-                                                            title="Edit Komite"
+                                                            title="Edit Bendahara"
                                                         >
                                                             <Edit className="h-4 w-4" />
                                                         </Link>
                                                         <button
                                                             onClick={() => handleDelete(committee.id, committee.name)}
                                                             className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-md hover:bg-red-100 transition-colors inline-flex"
-                                                            title="Hapus Komite"
+                                                            title="Hapus Bendahara"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -151,7 +151,7 @@ export default function UserShow({ schoolUser, committees }) {
                                         ) : (
                                             <tr>
                                                 <td colSpan="4" className="px-6 py-10 text-center text-gray-500">
-                                                    Belum ada komite untuk sekolah ini.
+                                                    Belum ada bendahara untuk sekolah ini.
                                                 </td>
                                             </tr>
                                         )}
