@@ -102,8 +102,7 @@ export default function Create() {
                                                                                 )}
                                                                                 {(currentUserRole === 'admin' || currentUserRole === 'guest') && (
                                                                                     <>
-                                                                                        <option value="guest">Kepala Sekolah</option>
-                                                                                        <option value="sub_guest">Komite</option>
+                                                                                        <option value="sub_guest">Bendahara</option>
                                                                                     </>
                                                                                 )}
                                                                             </select>

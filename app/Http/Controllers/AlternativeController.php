@@ -230,17 +230,16 @@ class AlternativeController extends Controller
 
         // Validasi berbeda untuk C11 tergantung role
         if ($user->role === 'guest') {
-            // Kepala Sekolah: C11 dikirim sebagai {min, max}
+            // Kepala Sekolah: C11 dikirim sebagai {min, max}; C1-C10 sebagai numerik
             $request->validate([
-                'alternative_id'       => 'required|exists:alternatives,id',
-                'answers'              => 'required|array|min:11',
-                'answers.11'           => 'required|array',
-                'answers.11.min'       => 'required|numeric|min:0',
-                'answers.11.max'       => 'required|numeric|min:0|gte:answers.11.min',
-                'answers.*'            => 'nullable',
+                'alternative_id'   => 'required|exists:alternatives,id',
+                'answers'          => 'required|array|min:11',
+                'answers.11'       => 'required|array',
+                'answers.11.min'   => 'required|numeric|min:0',
+                'answers.11.max'   => 'required|numeric|min:0|gte:answers.11.min',
             ]);
         } else {
-            // Bendahara: C11 dikirim sebagai nilai numerik tunggal
+            // Bendahara: semua jawaban termasuk C11 dikirim sebagai nilai numerik tunggal
             $request->validate([
                 'alternative_id' => 'required|exists:alternatives,id',
                 'answers'        => 'required|array|min:11',

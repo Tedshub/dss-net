@@ -74,6 +74,12 @@ class CriteriaSeeder extends Seeder
                 'type' => 'cost',
                 'weight' => 3,
             ],
+            [
+                'code' => 'C11',
+                'name' => 'Anggaran Kegiatan',
+                'type' => 'cost',
+                'weight' => 5,
+            ],
         ];
 
         foreach ($criterias as $criteria) {

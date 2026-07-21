@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
         $this->call(CriteriaSeeder::class);
         $this->call(AlternativeSeeder::class);
         $this->call(ValuesSeeder::class);
-        
+        $this->call(SchoolUserSeeder::class);
+
         // User::factory(10)->create();
 
         User::factory()->create([
