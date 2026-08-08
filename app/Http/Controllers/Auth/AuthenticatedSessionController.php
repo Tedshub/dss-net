@@ -46,8 +46,8 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
-    // ✅ Jika belum verified, redirect ke halaman OTP
-    return redirect()->route('otp.verify.form');
+    // ✅ Jika belum verified, redirect ke route send-otp untuk generate & kirim OTP
+    return redirect()->route('otp.send');
     }
 
     /**

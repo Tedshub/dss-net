@@ -30,17 +30,20 @@ class OTPController extends Controller
             ['user_id' => $user->id],
             [
                 'otp' => $otp,
-                'expires_at' => Carbon::now()->addMinutes(2),
+                'expires_at' => Carbon::now()->addMinutes(5),
                 'updated_at' => Carbon::now(),
             ]
         );
 
         // kirim email
-        Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
+        try {
+            Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send OTP: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['otp' => 'Gagal mengirim OTP ke email. Pastikan koneksi internet stabil atau konfigurasi mail server benar.']);
+        }
 
-        return inertia('Auth/VerifyOtp', [
-            'email' => $user->email,
-        ]);
+        return redirect()->route('otp.verify.form')->with('success', 'Kode OTP telah dikirim ke email Anda.');
     }
 
     public function showVerifyForm(Request $request)
@@ -141,14 +144,18 @@ class OTPController extends Controller
             ['user_id' => $user->id],
             [
                 'otp' => $otp,
-                'expires_at' => Carbon::now()->addMinutes(2),
+                'expires_at' => Carbon::now()->addMinutes(5),
                 'updated_at' => Carbon::now(),
             ]
         );
 
         // Kirim OTP lewat email
-        Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
-
-        return redirect()->back()->with('success', 'OTP baru telah dikirim ke email Anda.');
+        try {
+            Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp));
+            return redirect()->back()->with('success', 'OTP baru telah dikirim ke email Anda.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to resend OTP: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['otp' => 'Gagal mengirim OTP ke email. Pastikan koneksi internet stabil atau konfigurasi mail server benar.']);
+        }
     }
 }

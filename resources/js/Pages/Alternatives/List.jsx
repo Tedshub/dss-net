@@ -13,12 +13,12 @@ export default function AssessmentList({ alternative, criterias, ksBudget }) {
         {
             id: 1,
             criteria_code: 'C1',
-            item: 'Apakah Kebutuhan dan Prioritas Sekolah?',
+            item: 'Apakah kegiatan Yang direncanakan sesuai dengan Kebutuhan dan Prioritas Sekolah?',
             subtitle: '(Kebutuhan dan Prioritas Sekolah)',
             options: [
-                { label: 'Peningkatan kompetensi PTK', value: 5 },
-                { label: 'Peningkatan mutu siswa, peningkatan output melalui lomba', value: 4 },
-                { label: 'Terkait dengan kualitas proses pembelajaran', value: 3 }
+                { label: 'Sesuai Sarana Dan Prasarana', value: 3 },
+                { label: 'Sesuai Sumber Daya Manusia', value: 4 },
+                { label: 'Sesuai Peningkatan Mutu/Hasil Belajar Siswa', value: 5 }
             ]
         },
         {
@@ -243,24 +243,7 @@ export default function AssessmentList({ alternative, criterias, ksBudget }) {
                 <AuthenticatedLayout>
                     <Head title={`Daftar Penilaian - ${alternative.name}`} />
 
-                    <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-                        <div className="p-3 sm:p-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">
-                                    Progres Pengisian
-                                </span>
-                                <span className="text-sm font-semibold text-blue-600">
-                                    {Math.round((getAnsweredCount() / assessmentItems.length) * 100)}%
-                                </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div
-                                    className="bg-gradient-to-r from-blue-500 to-teal-500 h-3 rounded-full transition-all duration-300"
-                                    style={{ width: `${(getAnsweredCount() / assessmentItems.length) * 100}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div className="flex-1 overflow-hidden">
                         <div className="h-full overflow-y-auto p-3 sm:p-4 lg:p-6">

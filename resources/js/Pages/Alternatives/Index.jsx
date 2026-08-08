@@ -781,7 +781,7 @@ export default function Index({ auth, alternatives, flash }) {
                             <div className={`text-2xl font-bold ${committeeModalData.raters.length === committeeModalData.total && committeeModalData.total > 0 ? 'text-green-600' : committeeModalData.raters.length > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
                                 {committeeModalData.raters.length} / {committeeModalData.total}
                             </div>
-                            <div className="text-sm text-gray-600">komite telah memberikan penilaian</div>
+                            <div className="text-sm text-gray-600">bendahara telah memberikan penilaian</div>
                         </div>
 
                         {/* List komite */}

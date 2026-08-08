@@ -10,19 +10,47 @@ export default function VerifyOtp({ email }) {
         otp: "",
     });
 
-    const [counter, setCounter] = useState(120); // waktu expired (detik)
-    const [canResend, setCanResend] = useState(false);
+    const OTP_EXPIRE_TIME = 90;
+
+    const [counter, setCounter] = useState(() => {
+        const targetTime = localStorage.getItem(`otp_target_${email}`);
+        if (targetTime) {
+            const remaining = Math.floor((parseInt(targetTime) - Date.now()) / 1000);
+            return remaining > 0 ? remaining : 0;
+        }
+        const newTarget = Date.now() + OTP_EXPIRE_TIME * 1000;
+        localStorage.setItem(`otp_target_${email}`, newTarget.toString());
+        return OTP_EXPIRE_TIME;
+    });
+
+    const [canResend, setCanResend] = useState(counter <= 0);
 
     // Countdown timer
     useEffect(() => {
         let timer;
         if (counter > 0) {
-            timer = setInterval(() => setCounter((prev) => prev - 1), 1000);
+            timer = setInterval(() => {
+                const targetTime = localStorage.getItem(`otp_target_${email}`);
+                if (targetTime) {
+                    const remaining = Math.floor((parseInt(targetTime) - Date.now()) / 1000);
+                    if (remaining <= 0) {
+                        setCounter(0);
+                        setCanResend(true);
+                        clearInterval(timer);
+                    } else {
+                        setCounter(remaining);
+                    }
+                } else {
+                    setCounter(0);
+                    setCanResend(true);
+                    clearInterval(timer);
+                }
+            }, 1000);
         } else {
             setCanResend(true);
         }
         return () => clearInterval(timer);
-    }, [counter]);
+    }, [counter, email]);
 
     const submit = (e) => {
         e.preventDefault();
@@ -31,7 +59,9 @@ export default function VerifyOtp({ email }) {
 
     const resendOtp = () => {
         post("/resend-otp", { email });
-        setCounter(120);
+        const newTarget = Date.now() + OTP_EXPIRE_TIME * 1000;
+        localStorage.setItem(`otp_target_${email}`, newTarget.toString());
+        setCounter(OTP_EXPIRE_TIME);
         setCanResend(false);
     };
 
@@ -181,12 +211,14 @@ export default function VerifyOtp({ email }) {
 
                         <div className="text-center pt-2">
                             <p className="text-gray-500 text-sm">
-                                Sudah punya akun?{" "}
                                 <Link
-                                    href={route("login")}
+                                    href={route("logout")}
+                                    method="post"
+                                    as="button"
                                     className="text-pink-600 hover:text-pink-700 font-semibold transition-colors"
+                                    onClick={() => localStorage.removeItem(`otp_target_${email}`)}
                                 >
-                                    Masuk di sini
+                                    Masuk ke akun lain
                                 </Link>
                             </p>
                         </div>
