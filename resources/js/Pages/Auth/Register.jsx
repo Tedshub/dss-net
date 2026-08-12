@@ -223,7 +223,7 @@ export default function Register({ schools }) {
                                     onClick={() => handleRoleSelect('sub_guest')}
                                     className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex justify-center items-center text-lg"
                                 >
-                                    Daftar Sebagai Bendahara Sekolah
+                                    Daftar Sebagai Stakeholder
                                 </button>
                             </div>
                             
@@ -238,20 +238,23 @@ export default function Register({ schools }) {
                         </div>
                     ) : (
                         <>
-                            <div className="text-left mb-8 animate-fade-in-up flex items-center justify-between" style={{ animationDelay: '0.4s' }}>
+                            <div className="text-left mb-8 animate-fade-in-up flex flex-col sm:flex-row sm:items-start justify-between gap-4" style={{ animationDelay: '0.4s' }}>
                                 <div>
                                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                                        Daftar Sebagai {selectedRole === 'guest' ? 'Kepala Sekolah' : 'Bendahara Sekolah'}
+                                        Daftar Sebagai {selectedRole === 'guest' ? 'Kepala Sekolah' : 'Stakeholder'}
                                     </h1>
                                     <p className="text-gray-500 text-sm">
-                                        Buat akun Anda untuk mengakses sistem.
+                                        Buat akun Anda untuk mengakses sistem. Pastikan Kepala Sekolah mendaftar terlebih dahulu sebelum Stakeholder.
                                     </p>
                                 </div>
                                 <button 
                                     onClick={() => setSelectedRole(null)} 
-                                    className="text-sm text-gray-500 hover:text-gray-700 bg-gray-100 py-1.5 px-3 rounded-md"
+                                    className="text-xs sm:text-sm font-semibold text-pink-600 hover:text-white bg-pink-50 hover:bg-pink-500 border border-pink-200 hover:border-pink-500 py-1.5 px-4 rounded-full transition-all duration-300 shadow-sm hover:shadow-md transform active:scale-95 flex-shrink-0 text-center self-start sm:self-auto flex items-center justify-center space-x-1.5"
                                 >
-                                    Ubah Peran
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    <span>Ubah Peran</span>
                                 </button>
                             </div>
 

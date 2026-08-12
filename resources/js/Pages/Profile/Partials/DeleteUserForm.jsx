@@ -4,9 +4,11 @@ import Modal from '@/Components/Modal';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function DeleteUserForm({ className = '' }) {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const passwordInput = useRef();
 
     const {
@@ -38,6 +40,7 @@ export default function DeleteUserForm({ className = '' }) {
 
     const closeModal = () => {
         setConfirmingUserDeletion(false);
+        setShowPassword(false);
         clearErrors();
         reset();
     };
@@ -82,19 +85,33 @@ export default function DeleteUserForm({ className = '' }) {
                                 className="sr-only"
                             />
 
-                            <TextInput
-                                id="password"
-                                type="password"
-                                name="password"
-                                ref={passwordInput}
-                                value={data.password}
-                                onChange={(e) =>
-                                    setData('password', e.target.value)
-                                }
-                                className="block w-full border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-lg"
-                                isFocused
-                                placeholder="Masukkan kata sandi Anda"
-                            />
+                            <div className="relative">
+                                <TextInput
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    ref={passwordInput}
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
+                                    className="block w-full border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-lg pr-10"
+                                    isFocused
+                                    placeholder="Masukkan kata sandi Anda"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-5 w-5" />
+                                    ) : (
+                                        <Eye className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
 
                             <InputError
                                 message={errors.password}

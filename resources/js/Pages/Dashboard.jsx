@@ -181,12 +181,6 @@ export default function Dashboard({ criterias = [], alternatives = [] }) {
                                                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                                                         <span className="text-xs sm:text-sm font-semibold">3</span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm leading-relaxed">Anda dapat mengedit nilai pada menu Matriks Penilaian (jika diperlukan)</span>
-                                                </div>
-                                                <div className="flex items-start space-x-2 sm:space-x-3">
-                                                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                                                        <span className="text-xs sm:text-sm font-semibold">4</span>
-                                                    </div>
                                                     <span className="text-xs sm:text-sm leading-relaxed">Ranking hasil dan detailnya akan otomatis muncul pada menu Hitung</span>
                                                 </div>
                                             </div>

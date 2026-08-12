@@ -11,22 +11,39 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $search = $request->query('search');
 
         if ($user->role === 'admin') {
             // Admin melihat daftar Kepala Sekolah (guest)
-            $users = User::where('role', 'guest')->latest()->paginate(10);
+            $query = User::where('role', 'guest');
         } else if ($user->role === 'guest') {
             // Kepala Sekolah melihat daftar Komitenya (sub_guest yang parent_id nya adalah ID guest ini)
-            $users = User::where('parent_id', $user->id)->latest()->paginate(10);
+            $query = User::where('parent_id', $user->id);
         } else {
             abort(403);
         }
 
+        if ($search) {
+            $query->where(function ($q) use ($search, $user) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+                
+                if ($user->role === 'admin') {
+                    $q->orWhere('school_name', 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $users = $query->latest()->paginate(10)->withQueryString();
+
         return Inertia::render("Users/Index", [
             "users" => $users,
+            "filters" => [
+                "search" => $search
+            ]
         ]);
     }
 

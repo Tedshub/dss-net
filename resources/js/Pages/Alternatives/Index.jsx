@@ -174,7 +174,7 @@ export default function Index({ auth, alternatives, flash }) {
                             ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                             : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
-                title="Klik untuk melihat detail komite yang sudah menilai"
+                title="Klik untuk melihat detail Stakeholder yang sudah menilai"
             >
                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
@@ -448,7 +448,7 @@ export default function Index({ auth, alternatives, flash }) {
                                                         STATUS
                                                     </th>
                                                     <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        PENILAIAN KOMITE
+                                                        PENILAIAN STAKEHOLDER
                                                     </th>
                                                     <th className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         AKSI
@@ -754,14 +754,14 @@ export default function Index({ auth, alternatives, flash }) {
                 </div>
             )}
 
-            {/* Modal Detail Penilaian Komite */}
+            {/* Modal Detail Penilaian Stakeholder */}
             {showCommitteeModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
                     <div className="bg-white rounded-xl p-5 sm:p-6 w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto shadow-xl">
                         {/* Header Modal */}
                         <div className="flex items-center justify-between mb-4">
                             <div>
-                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Penilaian Komite</h3>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Penilaian Stakeholder</h3>
                                 <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[260px]">
                                     Opsi: <span className="font-medium text-gray-700">{committeeModalData.alternative?.name}</span>
                                 </p>
@@ -781,19 +781,19 @@ export default function Index({ auth, alternatives, flash }) {
                             <div className={`text-2xl font-bold ${committeeModalData.raters.length === committeeModalData.total && committeeModalData.total > 0 ? 'text-green-600' : committeeModalData.raters.length > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
                                 {committeeModalData.raters.length} / {committeeModalData.total}
                             </div>
-                            <div className="text-sm text-gray-600">bendahara telah memberikan penilaian</div>
+                            <div className="text-sm text-gray-600">Stakeholder telah memberikan penilaian</div>
                         </div>
 
-                        {/* List komite */}
+                        {/* List stakeholder */}
                         {committeeModalData.total === 0 ? (
-                            <p className="text-center text-sm text-gray-500 py-4">Belum ada komite yang terdaftar di sekolah ini.</p>
+                            <p className="text-center text-sm text-gray-500 py-4">Belum ada stakeholder yang terdaftar di sekolah ini.</p>
                         ) : (
                             <ul className="divide-y divide-gray-100">
-                                {/* Build full list: all committees, marking who rated */}
+                                {/* Build full list: all stakeholders, marking who rated */}
                                 {/* We show raters + non-raters from the alternative data */}
                                 {committeeModalData.raters.length === 0 ? (
                                     <li className="py-4 text-center text-sm text-gray-500">
-                                        Belum ada komite yang menilai opsi ini.
+                                        Tidak ada data.
                                     </li>
                                 ) : (
                                     committeeModalData.raters.map((rater) => (
@@ -819,7 +819,7 @@ export default function Index({ auth, alternatives, flash }) {
 
                         {committeeModalData.raters.length < committeeModalData.total && committeeModalData.total > 0 && (
                             <p className="mt-3 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
-                                {committeeModalData.total - committeeModalData.raters.length} komite belum memberikan penilaian pada opsi ini.
+                                {committeeModalData.total - committeeModalData.raters.length} stakeholder belum memberikan penilaian pada opsi ini.
                             </p>
                         )}
 
