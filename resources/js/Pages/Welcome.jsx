@@ -408,12 +408,9 @@ export default function Welcome({ auth }) {
                         </div>
 
                         {/* Bottom bar */}
-                        <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-                            <p className="text-xs text-gray-600">
+                        <div className="border-t border-gray-800 pt-6 flex items-center justify-center text-center">
+                            <p className="text-xs text-gray-600 text-center">
                                 &copy; {new Date().getFullYear()} Sistem Pendukung Keputusan RKS. Hak cipta dilindungi.
-                            </p>
-                            <p className="text-xs text-gray-600">
-                                Dibangun dengan <span className="text-pink-500">♥</span> menggunakan Laravel &amp; React
                             </p>
                         </div>
                     </div>
