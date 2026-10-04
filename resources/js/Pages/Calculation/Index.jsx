@@ -23,6 +23,8 @@ export default function Index({ initialData = null }) {
     const [activeTab, setActiveTab] = useState('ranking');
     const [isMobile, setIsMobile] = useState(false);
     const [expandedMatrices, setExpandedMatrices] = useState({});
+    const [showCommitteeModal, setShowCommitteeModal] = useState(false);
+    const [committeeModalData, setCommitteeModalData] = useState({ alternative: null, raters: [], total: 0 });
 
     // Detect mobile screen size - consistent with Values/Index.jsx
     useEffect(() => {
@@ -71,6 +73,40 @@ export default function Index({ initialData = null }) {
         }));
     };
 
+    const handleShowCommitteeDetail = (alternative) => {
+        setCommitteeModalData({
+            alternative,
+            raters: alternative.committee_raters || [],
+            total: alternative.committee_total_count || 0,
+        });
+        setShowCommitteeModal(true);
+    };
+
+    const renderCommitteeBadge = (alternative) => {
+        const rated  = alternative.committee_rated_count ?? 0;
+        const total  = alternative.committee_total_count ?? 0;
+        const allDone = total > 0 && rated === total;
+        return (
+            <button
+                type="button"
+                onClick={() => handleShowCommitteeDetail(alternative)}
+                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                    allDone
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : rated > 0
+                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+                title="Klik untuk melihat detail Stakeholder yang sudah menilai"
+            >
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                {rated} / {total} stakeholder menilai
+            </button>
+        );
+    };
+
     // Mobile Card Components with consistent styling
     const MobileRankingCard = ({ item, index }) => (
         <div className={`bg-white border border-gray-200 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4 mb-3 sm:mb-4 max-w-full ${
@@ -105,6 +141,10 @@ export default function Index({ initialData = null }) {
                 <div className="flex justify-between items-start">
                     <span className="text-xs text-gray-500 flex-shrink-0">Nama:</span>
                     <span className="text-sm text-gray-700 text-right ml-2 break-words">{item.name}</span>
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-gray-500 flex-shrink-0">Penilaian Stakeholder:</span>
+                    <span className="text-right ml-2">{renderCommitteeBadge(item)}</span>
                 </div>
             </div>
 
@@ -315,8 +355,11 @@ export default function Index({ initialData = null }) {
                                             <p className="text-sm sm:text-lg font-semibold truncate break-words px-2">{result.ranking[0].name}</p>
                                             <p className="text-xs sm:text-sm opacity-90">Kode: {result.ranking[0].code}</p>
                                             <p className="text-xs sm:text-sm opacity-90 font-medium bg-white/20 px-2 py-0.5 rounded mt-1 inline-block">Nilai: {parseFloat(result.ranking[0].value).toFixed(4)}</p>
+                                            <div className="mt-2 text-center">
+                                                {renderCommitteeBadge(result.ranking[0])}
+                                            </div>
                                         </div>
-                                        
+
                                         {/* Explanation Subsystem */}
                                         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 sm:p-5 text-left text-sm sm:text-base leading-relaxed max-w-3xl mx-auto shadow-inner">
                                             <div className="flex items-start gap-3">
@@ -325,11 +368,11 @@ export default function Index({ initialData = null }) {
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold mb-2 text-yellow-50 flex items-center">
-                                                        Alasan Rekomendasi 
+                                                        Alasan Rekomendasi
                                                         <span className="ml-2 text-xs bg-blue-500/50 text-white px-2 py-0.5 rounded-full border border-blue-400/30">Auto-Generated</span>
                                                     </p>
                                                     <p className="opacity-95 mb-2 text-sm sm:text-base">
-                                                        Sistem merekomendasikan opsi kebijakan <strong>{result.ranking[0].name}</strong> karena memiliki 
+                                                        Sistem merekomendasikan opsi kebijakan <strong>{result.ranking[0].name}</strong> karena memiliki
                                                         Nilai Preferensi (V) tertinggi di antara opsi lainnya, yaitu <strong>{parseFloat(result.ranking[0].value).toFixed(4)}</strong> dari skala 1.0.
                                                     </p>
                                                     {result.D && result.D.find(d => d.alternative_id === result.ranking[0].alternative_id) && (() => {
@@ -398,6 +441,9 @@ export default function Index({ initialData = null }) {
                                                         <th className="px-3 sm:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px] sm:min-w-[200px]">
                                                             NAMA ALTERNATIF
                                                         </th>
+                                                        <th className="px-3 sm:px-4 lg:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px] sm:min-w-[200px]">
+                                                            PENILAIAN STAKEHOLDER
+                                                        </th>
                                                         <th className="px-3 sm:px-4 lg:px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px] sm:min-w-[140px]">
                                                             NILAI PREFERENSI (V)
                                                         </th>
@@ -426,6 +472,9 @@ export default function Index({ initialData = null }) {
                                                             </td>
                                                             <td className="px-3 sm:px-4 lg:px-6 py-3 text-xs sm:text-sm text-gray-700 max-w-[150px] sm:max-w-[200px] truncate">
                                                                 <div title={item.name}>{item.name}</div>
+                                                            </td>
+                                                            <td className="px-3 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-center">
+                                                                {renderCommitteeBadge(item)}
                                                             </td>
                                                             <td className="px-3 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-center">
                                                                 <span className="text-sm sm:text-lg font-bold text-purple-600">
@@ -744,6 +793,83 @@ export default function Index({ initialData = null }) {
                     </div>
                 </AuthenticatedLayout>
             </div>
+
+            {/* Modal Detail Penilaian Stakeholder */}
+            {showCommitteeModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
+                    <div className="bg-white rounded-xl p-5 sm:p-6 w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto shadow-xl">
+                        {/* Header Modal */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Penilaian Stakeholder</h3>
+                                <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[260px]">
+                                    Opsi: <span className="font-medium text-gray-700">{committeeModalData.alternative?.name}</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowCommitteeModal(false)}
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Progress summary */}
+                        <div className="flex items-center space-x-3 mb-5 p-3 bg-gray-50 rounded-lg">
+                            <div className={`text-2xl font-bold ${committeeModalData.raters.length === committeeModalData.total && committeeModalData.total > 0 ? 'text-green-600' : committeeModalData.raters.length > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                {committeeModalData.raters.length} / {committeeModalData.total}
+                            </div>
+                            <div className="text-sm text-gray-600">Stakeholder telah memberikan penilaian</div>
+                        </div>
+
+                        {/* List stakeholder */}
+                        {committeeModalData.total === 0 ? (
+                            <p className="text-center text-sm text-gray-500 py-4">Belum ada stakeholder yang terdaftar di sekolah ini.</p>
+                        ) : (
+                            <ul className="divide-y divide-gray-100">
+                                {committeeModalData.raters.length === 0 ? (
+                                    <li className="py-4 text-center text-sm text-gray-500">
+                                        Tidak ada data.
+                                    </li>
+                                ) : (
+                                    committeeModalData.raters.map((rater) => (
+                                        <li key={rater.id} className="flex items-center space-x-3 py-3">
+                                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm uppercase flex-shrink-0">
+                                                {rater.name.charAt(0)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{rater.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{rater.email}</p>
+                                            </div>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 flex-shrink-0">
+                                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                                </svg>
+                                                Sudah menilai
+                                            </span>
+                                        </li>
+                                    ))
+                                )}
+                            </ul>
+                        )}
+
+                        {committeeModalData.raters.length < committeeModalData.total && committeeModalData.total > 0 && (
+                            <p className="mt-3 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                                {committeeModalData.total - committeeModalData.raters.length} stakeholder belum memberikan penilaian pada opsi ini.
+                            </p>
+                        )}
+
+                        <button
+                            onClick={() => setShowCommitteeModal(false)}
+                            className="mt-5 w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

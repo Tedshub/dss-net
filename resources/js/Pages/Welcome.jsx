@@ -22,6 +22,7 @@ function useInView(threshold = 0.15) {
 
 export default function Welcome({ auth }) {
     const [scrolled, setScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [featRef, featInView]   = useInView();
     const [stepsRef, stepsInView] = useInView();
     const [ctaRef, ctaInView]     = useInView();
@@ -31,6 +32,18 @@ export default function Welcome({ auth }) {
         window.addEventListener('scroll', onScroll);
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    // Close mobile menu on outside click
+    useEffect(() => {
+        if (!mobileMenuOpen) return;
+        const handler = (e) => {
+            if (!e.target.closest('#mobile-menu') && !e.target.closest('#hamburger-btn')) {
+                setMobileMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [mobileMenuOpen]);
 
     const features = [
         {
@@ -112,34 +125,111 @@ export default function Welcome({ auth }) {
                 {/* Sticky Navigation */}
                 <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md border-b border-gray-100' : 'bg-transparent'}`}>
                     <div className="container mx-auto px-5 sm:px-8 lg:px-20 py-3 sm:py-4 flex items-center justify-between">
+                        {/* Logo */}
                         <div className="flex items-center space-x-2">
                             <img src="/assets/images/dss.png" alt="RKS Logo" className="h-8 sm:h-9 w-auto" />
                         </div>
 
-                        <div className="flex items-center space-x-2 sm:space-x-5">
-                            <a href="#fitur" className={`hidden sm:inline text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-600 hover:text-pink-600' : 'text-white/90 hover:text-white'}`}>
+                        {/* Desktop Menu */}
+                        <div className="hidden lg:flex items-center space-x-5">
+                            <a href="#fitur" className={`text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-600 hover:text-pink-600' : 'text-white/90 hover:text-white'}`}>
                                 Fitur
                             </a>
-                            <a href="#cara-kerja" className={`hidden sm:inline text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-600 hover:text-pink-600' : 'text-white/90 hover:text-white'}`}>
+                            <a href="#cara-kerja" className={`text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-600 hover:text-pink-600' : 'text-white/90 hover:text-white'}`}>
                                 Cara Kerja
                             </a>
 
                             {auth.user ? (
                                 <Link
                                     href={auth.user.role === 'sub_guest' ? route("alternatives.index") : route("dashboard")}
-                                    className="bg-pink-500 hover:bg-pink-600 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm"
+                                    className="bg-pink-500 hover:bg-pink-600 px-6 py-2 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm"
                                 >
                                     Dashboard
                                 </Link>
                             ) : (
-                                <div className="flex items-center space-x-2 sm:space-x-3">
-                                    <Link href={route("login")} className={`text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-600 hover:text-pink-600' : 'text-white/90 hover:text-white'}`}>
+                                <div className="flex items-center space-x-3">
+                                    <Link href={route("login")} className="bg-pink-500 hover:bg-pink-600 px-6 py-2 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm">
                                         Masuk
                                     </Link>
-                                    <Link href={route("register")} className="bg-pink-500 hover:bg-pink-600 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm">
+                                    <Link href={route("register")} className="bg-pink-500 hover:bg-pink-600 px-6 py-2 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm">
                                         Daftar
                                     </Link>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Mobile / Tablet Right Side */}
+                        <div className="flex lg:hidden items-center space-x-2">
+                            {/* Masuk button always visible on mobile */}
+                            {auth.user ? (
+                                <Link
+                                    href={auth.user.role === 'sub_guest' ? route("alternatives.index") : route("dashboard")}
+                                    className="bg-pink-500 hover:bg-pink-600 px-4 py-1.5 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm"
+                                >
+                                    Dashboard
+                                </Link>
+                            ) : (
+                                <Link
+                                    href={route("login")}
+                                    className="bg-pink-500 hover:bg-pink-600 px-4 py-1.5 rounded-full text-white text-sm font-semibold transition-colors duration-200 shadow-sm"
+                                >
+                                    Masuk
+                                </Link>
+                            )}
+
+                            {/* Hamburger Button */}
+                            <button
+                                id="hamburger-btn"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className={`p-2 rounded-lg transition-colors duration-200 ${scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
+                                aria-label="Toggle menu"
+                            >
+                                {mobileMenuOpen ? (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Dropdown Menu */}
+                    <div
+                        id="mobile-menu"
+                        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+                            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                        } ${scrolled ? 'bg-white border-t border-gray-100' : 'bg-gray-900/95 backdrop-blur-sm'}`}
+                    >
+                        <div className="container mx-auto px-5 sm:px-8 py-4 flex flex-col space-y-1">
+                            <a
+                                href="#fitur"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-700 hover:bg-gray-50 hover:text-pink-600' : 'text-white/90 hover:bg-white/10'}`}
+                            >
+                                Fitur
+                            </a>
+                            <a
+                                href="#cara-kerja"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${scrolled ? 'text-gray-700 hover:bg-gray-50 hover:text-pink-600' : 'text-white/90 hover:bg-white/10'}`}
+                            >
+                                Cara Kerja
+                            </a>
+                            {!auth.user && (
+                                <>
+                                    <div className={`my-1 border-t ${scrolled ? 'border-gray-100' : 'border-white/10'}`} />
+                                    <Link
+                                        href={route("register")}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="py-3 px-4 rounded-lg text-sm font-medium bg-pink-500 hover:bg-pink-600 text-white text-center transition-colors duration-200"
+                                    >
+                                        Daftar
+                                    </Link>
+                                </>
                             )}
                         </div>
                     </div>
@@ -162,9 +252,15 @@ export default function Welcome({ auth }) {
                                 Keputusan Lebih Cerdas untuk Sekolah Anda
                             </h1>
 
-                            <p className="text-base sm:text-lg text-gray-800 leading-relaxed mb-8 max-w-xl animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
-                                RKS menghadirkan platform Sistem Pendukung Keputusan berbasis TOPSIS untuk membantu sekolah merencanakan, mengevaluasi, dan memprioritaskan kebijakan pendidikan secara objektif.
-                            </p>
+                            {/* On mobile: wrap in a frosted card on the left so text doesn't clash with bg figure */}
+                            <div className="lg:contents">
+                                <p
+                                    className="text-base sm:text-lg text-gray-800 leading-relaxed mb-8 max-w-xs sm:max-w-sm lg:max-w-xl animate-fade-in-up lg:bg-transparent lg:backdrop-blur-none lg:rounded-none lg:p-0 lg:shadow-none bg-white/60 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-sm"
+                                    style={{ animationDelay: '0.35s' }}
+                                >
+                                    RKS menghadirkan platform Sistem Pendukung Keputusan berbasis TOPSIS untuk membantu sekolah merencanakan, mengevaluasi, dan memprioritaskan kebijakan pendidikan secara objektif.
+                                </p>
+                            </div>
 
                             <div className="flex flex-wrap gap-3 sm:gap-4 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
                                 {auth.user ? (

@@ -124,13 +124,27 @@ class TopsisService
             $V[$alt->id] = $den > 0 ? ($dneg / $den) : 0.0;
         }
 
+        $committees = \App\Models\User::where('parent_id', $userId)
+            ->where('role', 'sub_guest')
+            ->get(['id', 'name', 'email']);
+        $totalCommittees = $committees->count();
+
         // --- 8. Ranking
-        $ranking = collect($alternatives)->map(function ($alt) use ($V) {
+        $ranking = collect($alternatives)->map(function ($alt) use ($V, $committees, $totalCommittees) {
+            $committeeRaters = $committees->filter(function ($committee) use ($alt) {
+                return $alt->values->where('user_id', $committee->id)->whereNotNull('value')->isNotEmpty();
+            })->values()->map(function ($c) {
+                return ['id' => $c->id, 'name' => $c->name, 'email' => $c->email];
+            });
+
             return [
                 'alternative_id' => $alt->id,
                 'code' => $alt->code,
                 'name' => $alt->name,
                 'value' => $V[$alt->id] ?? 0.0,
+                'committee_raters' => $committeeRaters,
+                'committee_rated_count' => $committeeRaters->count(),
+                'committee_total_count' => $totalCommittees,
             ];
         })->sortByDesc('value')->values()->all();
 
